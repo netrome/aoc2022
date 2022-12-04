@@ -38,3 +38,7 @@ fn k_largest(k: usize, iter: impl Iterator<Item = usize>) -> Vec<usize> {
 
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
+
+use crate::solution::Solution;
+inventory::submit!(Solution::new(1, 1, p1));
+inventory::submit!(Solution::new(1, 2, p2));

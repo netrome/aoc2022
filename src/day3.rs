@@ -53,3 +53,7 @@ fn priority(c: char) -> u32 {
 }
 
 use std::collections::HashSet;
+
+use crate::solution::Solution;
+inventory::submit!(Solution::new(3, 1, p1));
+inventory::submit!(Solution::new(3, 2, p2));

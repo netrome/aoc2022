@@ -73,3 +73,7 @@ impl FromStr for Pair {
 }
 
 use std::str::FromStr;
+
+use crate::solution::Solution;
+inventory::submit!(Solution::new(4, 1, p1));
+inventory::submit!(Solution::new(4, 2, p2));

@@ -20,12 +20,16 @@ fn main() -> anyhow::Result<()> {
         (_, _) => panic!("Not solved"),
     };
 
-    println!("{}", solution(&input));
+    let ans = solution(&input);
+    println!("{}", ans);
 
     Ok(())
 }
+
+inventory::collect!(solution::Solution);
 
 mod day1;
 mod day2;
 mod day3;
 mod day4;
+mod solution;

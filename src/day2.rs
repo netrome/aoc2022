@@ -101,3 +101,7 @@ impl std::str::FromStr for Round {
         })
     }
 }
+
+use crate::solution::Solution;
+inventory::submit!(Solution::new(2, 1, p1));
+inventory::submit!(Solution::new(2, 2, p2));

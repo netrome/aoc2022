@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
+clap = "4.0.29"
+inventory = "0.3.2"
 sscanf = "0.4.0"
-wl-clipboard-rs = "0.7.0"
