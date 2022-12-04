@@ -13,7 +13,7 @@ pub fn p2(input: &str) -> String {
 fn strategy(input: &str) -> impl Iterator<Item = Round> + '_ {
     input
         .trim()
-        .split("\n")
+        .split('\n')
         .map(|line| line.parse::<Round>().expect("Parse failure"))
 }
 
@@ -24,9 +24,7 @@ fn score(round: Round) -> i32 {
         _ => 0,
     };
 
-    let score = outcome_score + round.recommendation.value();
-
-    score
+    outcome_score + round.recommendation.value()
 }
 
 #[derive(Debug)]
