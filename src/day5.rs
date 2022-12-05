@@ -118,5 +118,5 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use crate::solution::Solution;
-inventory::submit!(Solution::new(4, 1, p1));
-inventory::submit!(Solution::new(4, 2, p2));
+inventory::submit!(Solution::new(5, 1, p1));
+inventory::submit!(Solution::new(5, 2, p2));

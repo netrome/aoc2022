@@ -1,31 +1,40 @@
 fn main() -> anyhow::Result<()> {
-    let day = 5;
-    let part = 2;
+    let cli = Cli::parse();
 
-    println!("Day {} part {}:", day, part);
-
-    let input_file = format!("./input/d{}.txt", day);
+    let input_file = cli
+        .input_file
+        .unwrap_or(format!("./input/d{}.txt", cli.day));
 
     let input = std::fs::read_to_string(input_file)?;
 
-    let solution = match (day, part) {
-        (1, 1) => day1::p1,
-        (1, 2) => day1::p2,
-        (2, 1) => day2::p1,
-        (2, 2) => day2::p2,
-        (3, 1) => day3::p1,
-        (3, 2) => day3::p2,
-        (4, 1) => day4::p1,
-        (4, 2) => day4::p2,
-        (5, 1) => day5::p1,
-        (5, 2) => day5::p2,
-        (_, _) => panic!("Not solved"),
-    };
+    let solution = inventory::iter::<solution::Solution>
+        .into_iter()
+        .find(|solution| solution.day == cli.day && solution.part == cli.part)
+        .expect(&format!(
+            "No solution found for day {} part {}",
+            cli.day, cli.part
+        ));
 
-    let ans = solution(&input);
+    let ans = (solution.run)(&input);
     println!("{}", ans);
 
     Ok(())
+}
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Cli {
+    /// AoC day
+    #[arg(short, long)]
+    day: usize,
+
+    /// AoC part
+    #[arg(short, long)]
+    part: usize,
+
+    /// Input override, otherwise defaults to ./input/d{day}.txt
+    #[arg(short, long)]
+    input_file: Option<String>,
 }
 
 inventory::collect!(solution::Solution);
@@ -36,3 +45,5 @@ mod day3;
 mod day4;
 mod day5;
 mod solution;
+
+use clap::Parser;
