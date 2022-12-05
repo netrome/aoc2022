@@ -1,5 +1,5 @@
 fn main() -> anyhow::Result<()> {
-    let day = 4;
+    let day = 5;
     let part = 2;
 
     println!("Day {} part {}:", day, part);
@@ -17,6 +17,8 @@ fn main() -> anyhow::Result<()> {
         (3, 2) => day3::p2,
         (4, 1) => day4::p1,
         (4, 2) => day4::p2,
+        (5, 1) => day5::p1,
+        (5, 2) => day5::p2,
         (_, _) => panic!("Not solved"),
     };
 
@@ -32,4 +34,5 @@ mod day1;
 mod day2;
 mod day3;
 mod day4;
+mod day5;
 mod solution;
