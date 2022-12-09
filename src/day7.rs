@@ -229,12 +229,6 @@ struct File {
     size: usize,
 }
 
-impl File {
-    fn new(name: String, size: usize) -> Self {
-        Self { name, size }
-    }
-}
-
 impl FromStr for File {
     type Err = anyhow::Error;
 
@@ -247,12 +241,10 @@ impl FromStr for File {
 }
 
 use std::collections::HashMap;
-use std::collections::VecDeque;
+
 use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::Mutex;
-
-use anyhow::anyhow;
 
 use crate::solution::Solution;
 inventory::submit!(Solution::new(7, 1, p1));

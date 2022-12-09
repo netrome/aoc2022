@@ -186,7 +186,6 @@ impl Tree {
 }
 
 use std::collections::HashMap;
-use std::collections::VecDeque;
 
 use crate::solution::Solution;
 inventory::submit!(Solution::new(8, 1, p1));
