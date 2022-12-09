@@ -10,10 +10,7 @@ fn main() -> anyhow::Result<()> {
     let solution = inventory::iter::<solution::Solution>
         .into_iter()
         .find(|solution| solution.day == cli.day && solution.part == cli.part)
-        .expect(&format!(
-            "No solution found for day {} part {}",
-            cli.day, cli.part
-        ));
+        .unwrap_or_else(|| panic!("No solution found for day {} part {}", cli.day, cli.part));
 
     let ans = (solution.run)(&input);
     println!("{}", ans);

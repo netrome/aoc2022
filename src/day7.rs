@@ -101,11 +101,7 @@ impl Explorer {
     fn add(&self, mut node: FSNode) {
         node.set_parent(self.workdir.clone());
 
-        self.workdir
-            .lock()
-            .unwrap()
-            .items
-            .insert(node.name().to_string(), node);
+        self.workdir.lock().unwrap().items.insert(node.name(), node);
     }
 }
 
@@ -155,11 +151,8 @@ impl FSNode {
     }
 
     fn set_parent(&mut self, parent: Arc<Mutex<Directory>>) {
-        match self {
-            Self::Dir(dir) => {
-                dir.lock().unwrap().parent = Some(parent);
-            }
-            _ => (),
+        if let Self::Dir(dir) = self {
+            dir.lock().unwrap().parent = Some(parent);
         }
     }
 
@@ -183,7 +176,7 @@ impl FromStr for FSNode {
             return Ok(Self::Dir(Arc::new(Mutex::new(dir))));
         };
 
-        return Err(anyhow::anyhow!("Failed to parse FSNode: {}", s));
+        Err(anyhow::anyhow!("Failed to parse FSNode: {}", s))
     }
 }
 
