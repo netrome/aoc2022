@@ -16,7 +16,20 @@ pub fn p1(input: &str) -> String {
 }
 
 pub fn p2(input: &str) -> String {
-    todo!()
+    let mut cpu = CPU::new();
+    let mut crt = CRT::new();
+
+    for instruction in parse_instructions(input) {
+        cpu.load(instruction);
+    }
+
+    crt.draw(cpu.register_x);
+    while cpu.next_cycle() {
+        crt.step();
+        crt.draw(cpu.register_x);
+    }
+
+    crt.render()
 }
 
 fn parse_instructions(input: &str) -> impl Iterator<Item = Instruction> + '_ {
@@ -28,6 +41,56 @@ struct CPU {
     register_x: i64,
     cycle: usize,
     x_updates: VecDeque<i64>,
+}
+
+#[derive(Default, Debug)]
+struct CRT {
+    picture: HashSet<(i64, i64)>,
+    x: i64,
+    y: i64,
+}
+
+impl CRT {
+    fn new() -> Self {
+        Self {
+            picture: HashSet::new(),
+            x: 0,
+            y: 0,
+        }
+    }
+
+    fn step(&mut self) {
+        self.x += 1;
+        if self.x >= 40 {
+            self.x = 0;
+            self.y += 1;
+        }
+    }
+
+    fn draw(&mut self, sprite_x: i64) {
+        if (self.x - sprite_x).abs() <= 1 {
+            self.picture.insert((self.x, self.y));
+        }
+    }
+
+    fn render(&self) -> String {
+        (0..6)
+            .map(|y| {
+                format!(
+                    "{}\n",
+                    (0..40).map(|x| self.render_px(x, y)).collect::<String>()
+                )
+            })
+            .collect()
+    }
+
+    fn render_px(&self, x: i64, y: i64) -> char {
+        if self.picture.contains(&(x, y)) {
+            '#'
+        } else {
+            ' '
+        }
+    }
 }
 
 impl CPU {
