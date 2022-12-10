@@ -7,7 +7,7 @@ pub fn p1(input: &str) -> String {
 
     for m in moves(input) {
         head.apply(m);
-        let mut path = tail.tail_path(&head);
+        let path = tail.tail_path(&head);
         if let Some(pos) = path.last() {
             tail = pos.clone()
         }
@@ -32,7 +32,7 @@ pub fn p2(input: &str) -> String {
             rope[idx].follow(&prev);
         }
 
-        let mut path = rope[9].tail_path(&rope[8]);
+        let path = rope[9].tail_path(&rope[8]);
         if let Some(pos) = path.last() {
             rope[9] = pos.clone()
         }
@@ -124,7 +124,6 @@ impl FromStr for Move {
 }
 
 use std::collections::HashSet;
-use std::collections::VecDeque;
 use std::str::FromStr;
 
 use crate::solution::Solution;

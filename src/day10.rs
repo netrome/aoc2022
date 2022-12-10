@@ -126,10 +126,6 @@ impl CPU {
     fn signal_strength(&self) -> i64 {
         self.register_x * (self.cycle as i64 + 1)
     }
-
-    fn is_busy(&self) -> bool {
-        !self.x_updates.is_empty()
-    }
 }
 
 enum Instruction {
