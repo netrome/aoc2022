@@ -85,7 +85,11 @@ impl Position {
     }
 
     fn follow(&mut self, head: &Position) {
-        let new_pos = self.tail_path(head).last().cloned().unwrap_or(self.clone());
+        let new_pos = self
+            .tail_path(head)
+            .last()
+            .cloned()
+            .unwrap_or_else(|| self.clone());
         *self = new_pos;
     }
 }
@@ -99,8 +103,8 @@ enum Move {
 impl Move {
     fn break_up(self) -> Vec<Move> {
         match self {
-            Self::Vertical(n) => vec![Self::Vertical(n.signum()); n.abs() as usize],
-            Self::Horizontal(n) => vec![Self::Horizontal(n.signum()); n.abs() as usize],
+            Self::Vertical(n) => vec![Self::Vertical(n.signum()); n.unsigned_abs() as usize],
+            Self::Horizontal(n) => vec![Self::Horizontal(n.signum()); n.unsigned_abs() as usize],
         }
     }
 }

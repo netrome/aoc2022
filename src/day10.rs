@@ -1,5 +1,5 @@
 pub fn p1(input: &str) -> String {
-    let mut cpu = CPU::new();
+    let mut cpu = Cpu::new();
 
     for instruction in parse_instructions(input) {
         cpu.load(instruction);
@@ -16,8 +16,8 @@ pub fn p1(input: &str) -> String {
 }
 
 pub fn p2(input: &str) -> String {
-    let mut cpu = CPU::new();
-    let mut crt = CRT::new();
+    let mut cpu = Cpu::new();
+    let mut crt = Crt::new();
 
     for instruction in parse_instructions(input) {
         cpu.load(instruction);
@@ -37,20 +37,20 @@ fn parse_instructions(input: &str) -> impl Iterator<Item = Instruction> + '_ {
 }
 
 #[derive(Default, Debug)]
-struct CPU {
+struct Cpu {
     register_x: i64,
     cycle: usize,
     x_updates: VecDeque<i64>,
 }
 
 #[derive(Default, Debug)]
-struct CRT {
+struct Crt {
     picture: HashSet<(i64, i64)>,
     x: i64,
     y: i64,
 }
 
-impl CRT {
+impl Crt {
     fn new() -> Self {
         Self {
             picture: HashSet::new(),
@@ -93,7 +93,7 @@ impl CRT {
     }
 }
 
-impl CPU {
+impl Cpu {
     fn new() -> Self {
         Self {
             register_x: 1,
