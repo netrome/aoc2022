@@ -13,9 +13,13 @@ pub fn p1(input: &str) -> String {
 
 pub fn p2(input: &str) -> String {
     let mut monkeys = read_monkeys(input);
+    let test_product = monkeys
+        .values()
+        .map(|monkey| monkey.test.divisible_by)
+        .product::<u64>();
 
     for _ in 0..10000 {
-        round_no_worries(&mut monkeys);
+        round_no_worries(&mut monkeys, test_product);
     }
 
     crate::day1::k_largest(2, monkeys.values().map(|monkey| monkey.activity))
@@ -55,21 +59,22 @@ fn round(monkeys: &mut HashMap<usize, Monkey>) {
     }
 }
 
-fn round_no_worries(monkeys: &mut HashMap<usize, Monkey>) {
+fn round_no_worries(monkeys: &mut HashMap<usize, Monkey>, prod: u64) {
     for monkey_id in 0..monkeys.len() {
         let mut monkey = monkeys.remove(&monkey_id).expect("Boom");
 
         while let Some(item) = monkey.items.pop_front() {
             let worry_level = monkey.op.apply(item);
+            let adjusted_worry_level = worry_level % prod;
             monkey.increment_activity();
 
-            let next_monkey = monkey.test.next_monkey(worry_level);
+            let next_monkey = monkey.test.next_monkey(adjusted_worry_level);
 
             monkeys
                 .get_mut(&next_monkey)
                 .expect("Pam!")
                 .items
-                .push_back(worry_level);
+                .push_back(adjusted_worry_level);
         }
 
         monkeys.insert(monkey_id, monkey);
