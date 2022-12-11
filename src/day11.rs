@@ -12,7 +12,16 @@ pub fn p1(input: &str) -> String {
 }
 
 pub fn p2(input: &str) -> String {
-    todo!();
+    let mut monkeys = read_monkeys(input);
+
+    for _ in 0..10000 {
+        round_no_worries(&mut monkeys);
+    }
+
+    crate::day1::k_largest(2, monkeys.values().map(|monkey| monkey.activity))
+        .iter()
+        .product::<usize>()
+        .to_string()
 }
 
 fn read_monkeys(input: &str) -> HashMap<usize, Monkey> {
@@ -40,6 +49,27 @@ fn round(monkeys: &mut HashMap<usize, Monkey>) {
                 .expect("Pam!")
                 .items
                 .push_back(new_level);
+        }
+
+        monkeys.insert(monkey_id, monkey);
+    }
+}
+
+fn round_no_worries(monkeys: &mut HashMap<usize, Monkey>) {
+    for monkey_id in 0..monkeys.len() {
+        let mut monkey = monkeys.remove(&monkey_id).expect("Boom");
+
+        while let Some(item) = monkey.items.pop_front() {
+            let worry_level = monkey.op.apply(item);
+            monkey.increment_activity();
+
+            let next_monkey = monkey.test.next_monkey(worry_level);
+
+            monkeys
+                .get_mut(&next_monkey)
+                .expect("Pam!")
+                .items
+                .push_back(worry_level);
         }
 
         monkeys.insert(monkey_id, monkey);
