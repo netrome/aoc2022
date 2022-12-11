@@ -17,7 +17,7 @@ fn calorie_sums(input: &str) -> impl Iterator<Item = usize> + '_ {
     })
 }
 
-fn k_largest(k: usize, iter: impl Iterator<Item = usize>) -> Vec<usize> {
+pub fn k_largest(k: usize, iter: impl Iterator<Item = usize>) -> Vec<usize> {
     let mut iter = iter.map(Reverse);
 
     let mut heap = BinaryHeap::new();
