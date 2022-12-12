@@ -1,20 +1,35 @@
 pub fn p1(input: &str) -> String {
     let map = read_map(input);
-    let mut search = Search::new(map.start_position);
+    shortest_path(map.start_position, &map).to_string()
+}
+
+pub fn p2(input: &str) -> String {
+    let map = read_map(input);
+    let mut ans: usize = usize::MAX;
+
+    for start_position in map
+        .heights
+        .iter()
+        .filter(|(_pos, height)| **height == 'a' as u32)
+        .map(|(pos, _height)| pos)
+    {
+        ans = ans.min(shortest_path(*start_position, &map));
+    }
+
+    ans.to_string()
+}
+
+fn shortest_path(start_position: (usize, usize), map: &Map) -> usize {
+    let mut search = Search::new(start_position);
 
     while search.has_step() {
         search.step(&map);
     }
 
-    search
+    *search
         .shortest_distances
         .get(&map.target_location)
-        .expect("Oh no!")
-        .to_string()
-}
-
-pub fn p2(input: &str) -> String {
-    todo!()
+        .unwrap_or(&usize::MAX)
 }
 
 fn read_map(input: &str) -> Map {
