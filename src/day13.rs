@@ -39,11 +39,7 @@ pub fn p2(input: &str) -> String {
 }
 
 fn parse_input(input: &str) -> Vec<Pair> {
-    input
-        .trim()
-        .split("\n\n")
-        .map(|pair_line| parse_pair_line(&pair_line))
-        .collect()
+    input.trim().split("\n\n").map(parse_pair_line).collect()
 }
 
 fn parse_pair_line(line: &str) -> Pair {
@@ -110,7 +106,7 @@ impl std::cmp::PartialOrd for Packet {
 }
 
 fn compare_lists(lhs: &[Packet], rhs: &[Packet]) -> Option<std::cmp::Ordering> {
-    for (left, right) in lhs.into_iter().zip(rhs.into_iter()) {
+    for (left, right) in lhs.iter().zip(rhs.iter()) {
         match left.partial_cmp(right).expect("Impossibruu!") {
             std::cmp::Ordering::Equal => continue,
             other => return Some(other),
@@ -160,7 +156,7 @@ fn tokenize_inner(line: &str, output: &mut Vec<Token>) {
                 make_digit(&mut digit_buffer, output);
             }
             other => {
-                if other.is_digit(10) {
+                if other.is_ascii_digit() {
                     digit_buffer.push(other)
                 } else if other.is_whitespace() {
                 } else {
@@ -172,7 +168,7 @@ fn tokenize_inner(line: &str, output: &mut Vec<Token>) {
 }
 
 fn make_digit(buffer: &mut Vec<char>, output: &mut Vec<Token>) {
-    if buffer.len() > 0 {
+    if !buffer.is_empty() {
         let mut local = Vec::new();
         std::mem::swap(&mut local, buffer);
 

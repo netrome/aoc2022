@@ -23,7 +23,7 @@ fn shortest_path(start_position: (usize, usize), map: &Map) -> usize {
     let mut search = Search::new(start_position);
 
     while search.has_step() {
-        search.step(&map);
+        search.step(map);
     }
 
     *search
@@ -114,16 +114,17 @@ impl Search {
         let distance = *self.shortest_distances.get(&visit).expect("Impossibru!");
 
         for next_step in map.neighbors(&visit) {
-            if self.shortest_distances.contains_key(&next_step) {
-                continue;
-            } else {
-                self.shortest_distances.insert(next_step, distance + 1);
+            if let Entry::Vacant(e) = self.shortest_distances.entry(next_step) {
+                e.insert(distance + 1);
                 self.to_visit.push_back(next_step);
+            } else {
+                continue;
             }
         }
     }
 }
 
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
