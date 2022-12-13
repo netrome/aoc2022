@@ -1,8 +1,11 @@
 pub fn p1(input: &str) -> String {
-    let pairs = parse_input(input);
-
-    println!("Pairs: {:?}", pairs);
-    todo!();
+    parse_input(input)
+        .into_iter()
+        .enumerate()
+        .filter(|(_, pair)| pair.is_in_order())
+        .map(|(idx, _)| idx + 1)
+        .sum::<usize>()
+        .to_string()
 }
 
 pub fn p2(input: &str) -> String {
@@ -29,7 +32,13 @@ fn parse_pair_line(line: &str) -> Pair {
 #[derive(Debug)]
 struct Pair(Packet, Packet);
 
-#[derive(Debug)]
+impl Pair {
+    fn is_in_order(&self) -> bool {
+        self.0 <= self.1
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
 enum Packet {
     UInt(usize),
     List(Vec<Packet>),
@@ -61,6 +70,28 @@ impl Packet {
 
         Self::List(packets)
     }
+}
+
+impl std::cmp::PartialOrd for Packet {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match (self, other) {
+            (Self::UInt(lhs), Self::UInt(rhs)) => lhs.partial_cmp(rhs),
+            (Self::List(lhs), Self::List(rhs)) => compare_lists(lhs, rhs),
+            (Self::List(lhs), rhs) => compare_lists(lhs, &[rhs.clone()]),
+            (lhs, Self::List(rhs)) => compare_lists(&[lhs.clone()], rhs),
+        }
+    }
+}
+
+fn compare_lists(lhs: &[Packet], rhs: &[Packet]) -> Option<std::cmp::Ordering> {
+    for (left, right) in lhs.into_iter().zip(rhs.into_iter()) {
+        match left.partial_cmp(right).expect("Impossibruu!") {
+            std::cmp::Ordering::Equal => continue,
+            other => return Some(other),
+        }
+    }
+
+    lhs.len().partial_cmp(&rhs.len())
 }
 
 impl FromStr for Packet {
