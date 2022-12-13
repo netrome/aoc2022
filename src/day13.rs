@@ -9,7 +9,33 @@ pub fn p1(input: &str) -> String {
 }
 
 pub fn p2(input: &str) -> String {
-    todo!();
+    let divider_1: Packet = "[[2]]".parse().unwrap();
+    let divider_2: Packet = "[[6]]".parse().unwrap();
+
+    let mut all_packets: Vec<Packet> = input
+        .trim()
+        .split('\n')
+        .filter(|line| line != &"")
+        .map(|line| line.parse().unwrap())
+        .collect();
+
+    all_packets.push(divider_1.clone());
+    all_packets.push(divider_2.clone());
+
+    all_packets.sort_by(|lhs, rhs| lhs.partial_cmp(rhs).unwrap());
+
+    let mut divider_1_index = 0;
+    let mut divider_2_index = 0;
+
+    for (idx, packet) in all_packets.into_iter().enumerate() {
+        if packet == divider_1 {
+            divider_1_index = idx + 1;
+        } else if packet == divider_2 {
+            divider_2_index = idx + 1;
+        }
+    }
+
+    (divider_1_index * divider_2_index).to_string()
 }
 
 fn parse_input(input: &str) -> Vec<Pair> {
@@ -171,7 +197,7 @@ impl Packet {
     }
 }
 
-use std::{iter::FromIterator, str::FromStr};
+use std::str::FromStr;
 
 use crate::solution::Solution;
 inventory::submit!(Solution::new(13, 1, p1));
