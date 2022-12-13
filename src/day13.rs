@@ -188,15 +188,6 @@ fn make_digit(buffer: &mut Vec<char>, output: &mut Vec<Token>) {
     }
 }
 
-impl Packet {
-    fn scan(iter: &mut impl Iterator<Item = char>) -> Self {
-        let peek = iter.peekable();
-        let c = iter.next();
-
-        todo!();
-    }
-}
-
 use std::str::FromStr;
 
 use crate::solution::Solution;
