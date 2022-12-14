@@ -7,7 +7,11 @@ pub fn p1(input: &str) -> String {
 }
 
 pub fn p2(input: &str) -> String {
-    todo!()
+    let mut cave = read_input(input);
+
+    while cave.drop_sand_p2(Point(0, 500)) {}
+
+    cave.count_sand().to_string()
 }
 
 fn read_input(input: &str) -> Cave {
@@ -49,6 +53,26 @@ impl Cave {
             if !self.objects.contains_key(&candidate) {
                 return self.drop_sand(candidate);
             }
+        }
+
+        self.objects.insert(point, Object::Sand);
+        true
+    }
+
+    fn drop_sand_p2(&mut self, point: Point) -> bool {
+        if point.0 == self.highest_x + 1 {
+            self.objects.insert(point, Object::Sand);
+            return true;
+        }
+
+        for candidate in point.drop_candidates() {
+            if !self.objects.contains_key(&candidate) {
+                return self.drop_sand_p2(candidate);
+            }
+        }
+
+        if self.objects.contains_key(&point) {
+            return false;
         }
 
         self.objects.insert(point, Object::Sand);
