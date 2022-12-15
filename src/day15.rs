@@ -2,14 +2,53 @@ pub fn p1(input: &str) -> String {
     let world = parse_input(input);
 
     points_without_beacon(&world, 2000000).to_string()
-    //points_without_beacon(&world, 10).to_string()
 }
 
 pub fn p2(input: &str) -> String {
-    todo!();
+    let world = parse_input(input);
+
+    find_beacon(&world, 4000000).to_string()
+}
+
+fn find_beacon(world: &World, ymax: i64) -> i64 {
+    for y in 0..ymax {
+        let intervals = find_intervals(world, y);
+        if intervals.len() > 1 {
+            let mut inter = intervals.into_iter();
+            let mut current = inter.next().unwrap();
+
+            while let Some(next) = inter.next() {
+                if next.0 - current.1 == 2 {
+                    return (next.0 + 1) * 4000000 + y;
+                }
+
+                current = next;
+            }
+        }
+    }
+    0
 }
 
 fn points_without_beacon(world: &World, y: i64) -> usize {
+    let joined_intervals = find_intervals(world, y);
+
+    let total_number_of_positions: usize = joined_intervals.iter().map(|int| int.len()).sum();
+    let positions_with_sensor = world
+        .sensors
+        .iter()
+        .filter(|sensor| sensor.pos.1 == y && sensor.pos.in_any_interval(&joined_intervals))
+        .count();
+
+    let positions_with_beacon: usize = world
+        .beacons
+        .iter()
+        .filter(|beacon| beacon.pos.1 == y && beacon.pos.in_any_interval(&joined_intervals))
+        .count();
+
+    total_number_of_positions - positions_with_sensor - positions_with_beacon
+}
+
+fn find_intervals(world: &World, y: i64) -> Vec<Interval> {
     let mut intervals: Vec<Interval> = world
         .sensors
         .iter()
@@ -32,21 +71,7 @@ fn points_without_beacon(world: &World, y: i64) -> usize {
         }
     }
     joined_intervals.push(int1);
-
-    let total_number_of_positions: usize = joined_intervals.iter().map(|int| int.len()).sum();
-    let positions_with_sensor = world
-        .sensors
-        .iter()
-        .filter(|sensor| sensor.pos.1 == y && sensor.pos.in_any_interval(&joined_intervals))
-        .count();
-
-    let positions_with_beacon: usize = world
-        .beacons
-        .iter()
-        .filter(|beacon| beacon.pos.1 == y && beacon.pos.in_any_interval(&joined_intervals))
-        .count();
-
-    total_number_of_positions - positions_with_sensor - positions_with_beacon
+    joined_intervals
 }
 
 fn parse_input(input: &str) -> World {
@@ -152,11 +177,11 @@ impl Interval {
     }
 
     fn overlaps(&self, other: &Self) -> bool {
-        !self.is_strictly_lower(other) || !other.is_strictly_lower(self)
+        !(self.is_strictly_lower(other) || other.is_strictly_lower(self))
     }
 
     fn is_strictly_lower(&self, other: &Self) -> bool {
-        self.0 < other.0 && self.1 < other.1
+        self.1 < other.0
     }
 
     fn len(&self) -> usize {
