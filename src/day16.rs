@@ -43,8 +43,9 @@ fn search_max_release(graph: &Graph) -> u32 {
     todo!();
 }
 
-fn next_steps(graph: &Graph, point: &SearchPoint, score: u32) -> Vec<(u32, SearchPoint)> {
-    let mut next_steps: Vec<_> = point.moves(graph).into_iter().map(|m| (score, m)).collect();
+fn next_steps(graph: &Graph, point: &SearchPoint, score: u32) -> BinaryHeap<(u32, SearchPoint)> {
+    let mut next_steps: BinaryHeap<_> =
+        point.moves(graph).into_iter().map(|m| (score, m)).collect();
     if let Some(step) = point.open() {
         let added_score = graph
             .valves
