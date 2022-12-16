@@ -21,13 +21,18 @@ fn search_max_release(graph: &Graph) -> u32 {
 
     while let Some((score, point)) = next.pop() {
         for (score, step) in next_steps(graph, &point, score) {
-            if seen.get(&step).unwrap_or(&0) <= &score && step.minute < 30 {
+            if seen
+                .get(&step)
+                .map(|step_score| step_score < &score)
+                .unwrap_or(true)
+                && step.minute < 30
+            {
                 seen.insert(step.clone(), score);
                 next.push((score, step));
             }
         }
 
-        if i % 1000 == 0 {
+        if i % 100000 == 0 {
             println!("Totoal: {:?}", next.len());
         }
         i += 1;
@@ -38,9 +43,8 @@ fn search_max_release(graph: &Graph) -> u32 {
     todo!();
 }
 
-fn next_steps(graph: &Graph, point: &SearchPoint, score: u32) -> BinaryHeap<(u32, SearchPoint)> {
-    let mut next_steps: BinaryHeap<_> =
-        point.moves(graph).into_iter().map(|m| (score, m)).collect();
+fn next_steps(graph: &Graph, point: &SearchPoint, score: u32) -> Vec<(u32, SearchPoint)> {
+    let mut next_steps: Vec<_> = point.moves(graph).into_iter().map(|m| (score, m)).collect();
     if let Some(step) = point.open() {
         let added_score = graph
             .valves
