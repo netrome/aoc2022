@@ -1,5 +1,7 @@
 pub fn p1(input: &str) -> String {
-    //let graph = input.parse().unwrap();
+    let graph = input.parse().unwrap();
+
+    find_max_pressure(&graph);
 
     todo!();
 }
@@ -23,6 +25,8 @@ fn find_max_pressure(graph: &Graph) -> u32 {
         }
 
         step_nodes = next_step_nodes;
+
+        println!("Step nodes at {}: {}", i, step_nodes.len());
     }
 
     0
