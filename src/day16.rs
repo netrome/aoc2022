@@ -1,15 +1,17 @@
 pub fn p1(input: &str) -> String {
-    let graph = input.parse().unwrap();
+    let graph: Graph = input.parse().unwrap();
+    let graph2: Graph2 = graph.into();
 
-    find_max_pressure(&graph).to_string()
+    find_max_pressure(&graph2).to_string()
 }
 
 pub fn p2(input: &str) -> String {
     todo!();
 }
 
-fn find_max_pressure(graph: &Graph) -> u32 {
-    let mut step_nodes = vec![Rc::new(PathNode::genesis())];
+fn find_max_pressure(graph: &Graph2) -> u32 {
+    let all_nodes = graph.valves.keys().cloned().collect();
+    let mut step_nodes = vec![Rc::new(PathNode::genesis(all_nodes))];
 
     for i in 0..30 {
         let mut next_step_nodes = Vec::new();
@@ -39,57 +41,48 @@ fn find_max_pressure(graph: &Graph) -> u32 {
 }
 
 struct PathNode {
+    minute: u32,
     score: u32,
-    flow_rate: u32,
     pos: ValveId,
-    open_valves: HashSet<ValveId>,
+    to_visit: HashSet<ValveId>,
     last: Option<Rc<PathNode>>,
 }
 
 impl PathNode {
-    fn genesis() -> Self {
+    fn genesis(mut to_visit: HashSet<ValveId>) -> Self {
         Self {
+            minute: 0,
             score: 0,
-            flow_rate: 0,
             pos: ValveId::genesis(),
-            open_valves: HashSet::new(),
+            to_visit,
             last: None,
         }
     }
 
-    fn grow(node: Rc<Self>, graph: &Graph) -> impl Iterator<Item = Rc<Self>> + '_ {
-        graph.neighbors(&node.pos).map(move |vault| {
-            Rc::new(Self {
-                score: node.score + node.flow_rate,
-                flow_rate: node.flow_rate,
-                open_valves: node.open_valves.clone(),
-                pos: vault.id,
-                last: Some(node.clone()),
-            })
-        })
-    }
+    fn children(node: Rc<Self>, graph: &Graph2) -> Vec<Rc<Self>> {
+        let mut children = Vec::new();
 
-    fn open(node: Rc<Self>, graph: &Graph) -> Option<Rc<Self>> {
-        if !node.open_valves.contains(&node.pos) {
-            let flow_add = graph.valves.get(&node.pos).unwrap().flow_rate;
+        for valve_id in node.to_visit {
+            let next = graph.valves.get(&valve_id).unwrap();
+            let dist = next.tunnels.get(&node.pos).unwrap();
 
-            if flow_add == 0 {
-                return None;
+            let remaining_time = 30u32.saturating_sub(node.minute + dist + 1);
+            let mut to_visit = node.to_visit.clone();
+            to_visit.remove(&valve_id);
+
+            if remaining_time > 0 {
+                let child = Rc::new(Self {
+                    minute: node.minute + dist + 1,
+                    score: node.score + next.flow_rate * remaining_time,
+                    pos: next.id,
+                    to_visit,
+                    last: Some(node.clone()),
+                });
+                children.push(child);
             }
-
-            let mut open_valves = node.open_valves.clone();
-            open_valves.insert(node.pos);
-
-            Some(Rc::new(Self {
-                score: node.score,
-                flow_rate: node.flow_rate + flow_add,
-                open_valves,
-                pos: node.pos,
-                last: Some(node),
-            }))
-        } else {
-            None
         }
+
+        children
     }
 
     fn get_path(node: Rc<Self>) -> Vec<ValveId> {
@@ -100,6 +93,38 @@ impl PathNode {
         } else {
             vec![node.pos]
         }
+    }
+}
+
+#[derive(Debug)]
+struct Graph2 {
+    valves: HashMap<ValveId, Valve2>,
+}
+
+impl From<Graph> for Graph2 {
+    fn from(other: Graph) -> Self {
+        let mut valves = HashMap::new();
+
+        for valve in other.valves.values() {
+            let distances = other
+                .distances(&valve.id)
+                .into_iter()
+                .filter(|(valve_id, _)| {
+                    let v = other.valves.get(valve_id).unwrap();
+                    v.flow_rate > 0 || v.id == ValveId::genesis()
+                })
+                .collect();
+
+            let valve = Valve2 {
+                id: valve.id,
+                flow_rate: valve.flow_rate,
+                tunnels: distances,
+            };
+
+            valves.insert(valve.id, valve);
+        }
+
+        Self { valves }
     }
 }
 
@@ -116,6 +141,24 @@ impl Graph {
             .iter()
             .map(|id| self.valves.get(id).unwrap())
     }
+
+    fn distances(&self, valve: &ValveId) -> HashMap<ValveId, u32> {
+        let mut distances = HashMap::new();
+        let mut to_explore = VecDeque::new();
+        to_explore.push_back((*valve, 0));
+
+        while let Some((valve, dist)) = to_explore.pop_front() {
+            if !distances.contains_key(&valve) {
+                distances.insert(valve, dist);
+            }
+
+            for other in self.neighbors(&valve) {
+                to_explore.push_back((other.id, dist + 1))
+            }
+        }
+
+        distances
+    }
 }
 
 impl FromStr for Graph {
@@ -131,6 +174,13 @@ impl FromStr for Graph {
 
         Ok(Self { valves })
     }
+}
+
+#[derive(Debug)]
+struct Valve2 {
+    id: ValveId,
+    flow_rate: u32,
+    tunnels: HashMap<ValveId, u32>,
 }
 
 #[derive(Debug)]
