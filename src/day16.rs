@@ -1,7 +1,6 @@
 pub fn p1(input: &str) -> String {
-    let graph = input.parse().unwrap();
+    //let graph = input.parse().unwrap();
 
-    search_max_release(&graph);
     todo!();
 }
 
@@ -9,104 +8,49 @@ pub fn p2(input: &str) -> String {
     todo!();
 }
 
-fn search_max_release(graph: &Graph) -> u32 {
-    let mut seen = HashMap::new();
-
-    let starting_point = SearchPoint::starting_point();
-    let mut next = next_steps(&graph, &starting_point, 0);
-
-    seen.insert(starting_point, 0);
-
-    let mut i = 0;
-
-    while let Some((score, point)) = next.pop() {
-        for (score, step) in next_steps(graph, &point, score) {
-            if seen
-                .get(&step)
-                .map(|step_score| step_score < &score)
-                .unwrap_or(true)
-                && step.minute < 30
-            {
-                seen.insert(step.clone(), score);
-                next.push((score, step));
-            }
-        }
-
-        if i % 100000 == 0 {
-            println!("Totoal: {:?}", next.len());
-        }
-        i += 1;
-    }
-
-    println!("Done! Seen: {:?}", seen);
-
-    todo!();
+struct PathNode {
+    score: u32,
+    flow_rate: u32,
+    pos: ValveId,
+    open_valves: HashSet<ValveId>,
+    last: Option<Rc<PathNode>>,
 }
 
-fn next_steps(graph: &Graph, point: &SearchPoint, score: u32) -> BinaryHeap<(u32, SearchPoint)> {
-    let mut next_steps: BinaryHeap<_> =
-        point.moves(graph).into_iter().map(|m| (score, m)).collect();
-    if let Some(step) = point.open() {
-        let added_score = graph
-            .valves
-            .get(&step.position)
-            .expect("Crap")
-            .release_value(step.minute);
-
-        next_steps.push((score + added_score, step));
-    }
-
-    next_steps
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
-struct SearchPoint {
-    minute: u32,
-    open_valves: BTreeSet<ValveId>,
-    position: ValveId,
-}
-
-impl SearchPoint {
-    fn starting_point() -> Self {
-        let position = ValveId('A', 'A');
-        let open_valves = BTreeSet::new();
-        let minute = 0;
-
+impl PathNode {
+    fn genesis() -> Self {
         Self {
-            minute,
-            position,
-            open_valves,
+            score: 0,
+            flow_rate: 0,
+            pos: ValveId::genesis(),
+            open_valves: HashSet::new(),
+            last: None,
         }
     }
 
-    fn open(&self) -> Option<Self> {
-        let mut res = self.clone();
-        if res.open_valves.insert(self.position) {
-            res.minute += 1;
-            Some(res)
-        } else {
-            None
-        }
-    }
-
-    fn moves(&self, graph: &Graph) -> Vec<Self> {
-        graph
-            .valves
-            .get(&self.position)
-            .expect("No?")
-            .tunnels
-            .iter()
-            .map(|valve_id| Self {
-                minute: self.minute + 1,
-                open_valves: self.open_valves.clone(),
-                position: *valve_id,
-            })
-            .collect()
+    fn grow(node: Rc<Self>, graph: &Graph) -> impl Iterator<Item = Self> + '_ {
+        graph.neighbors(&node.pos).map(move |vault| Self {
+            score: node.score + node.flow_rate,
+            flow_rate: node.flow_rate,
+            open_valves: node.open_valves.clone(),
+            pos: vault.id,
+            last: Some(node.clone()),
+        })
     }
 }
 
 struct Graph {
     valves: HashMap<ValveId, Valve>,
+}
+
+impl Graph {
+    fn neighbors(&self, valve: &ValveId) -> impl Iterator<Item = &Valve> {
+        self.valves
+            .get(valve)
+            .expect("Waaat")
+            .tunnels
+            .iter()
+            .map(|id| self.valves.get(id).unwrap())
+    }
 }
 
 impl FromStr for Graph {
@@ -129,12 +73,6 @@ struct Valve {
     id: ValveId,
     flow_rate: u32,
     tunnels: Vec<ValveId>,
-}
-
-impl Valve {
-    fn release_value(&self, minute: u32) -> u32 {
-        30u32.saturating_sub(minute) * self.flow_rate
-    }
 }
 
 impl FromStr for Valve {
@@ -165,6 +103,12 @@ impl FromStr for Valve {
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, Ord, PartialOrd)]
 struct ValveId(char, char);
 
+impl ValveId {
+    fn genesis() -> Self {
+        Self('A', 'A')
+    }
+}
+
 impl FromStr for ValveId {
     type Err = ();
 
@@ -178,7 +122,8 @@ impl FromStr for ValveId {
 }
 
 use std::{
-    collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, VecDeque},
+    collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, HashSet, VecDeque},
+    rc::Rc,
     str::{FromStr, RSplitTerminator},
 };
 
