@@ -8,6 +8,14 @@ pub fn p2(input: &str) -> String {
     todo!();
 }
 
+fn find_max_pressure(graph: &Graph) -> u32 {
+    todo!();
+
+    for i in 0..30 {
+        todo!();
+    }
+}
+
 struct PathNode {
     score: u32,
     flow_rate: u32,
@@ -35,6 +43,25 @@ impl PathNode {
             pos: vault.id,
             last: Some(node.clone()),
         })
+    }
+
+    fn open(node: Rc<Self>, graph: &Graph) -> Option<Self> {
+        if !node.open_valves.contains(&node.pos) {
+            let flow_add = graph.valves.get(&node.pos).unwrap().flow_rate;
+
+            let mut open_valves = node.open_valves.clone();
+            open_valves.insert(node.pos);
+
+            Some(Self {
+                score: node.score,
+                flow_rate: node.flow_rate + flow_add,
+                open_valves,
+                pos: node.pos,
+                last: Some(node),
+            })
+        } else {
+            None
+        }
     }
 }
 
