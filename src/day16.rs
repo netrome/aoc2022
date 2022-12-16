@@ -9,11 +9,23 @@ pub fn p2(input: &str) -> String {
 }
 
 fn find_max_pressure(graph: &Graph) -> u32 {
-    todo!();
+    let mut step_nodes = vec![Rc::new(PathNode::genesis())];
 
     for i in 0..30 {
-        todo!();
+        let mut next_step_nodes = Vec::new();
+
+        for node in step_nodes {
+            if let Some(opened) = PathNode::open(node.clone(), graph) {
+                next_step_nodes.push(opened);
+            }
+
+            next_step_nodes.extend(PathNode::grow(node, graph));
+        }
+
+        step_nodes = next_step_nodes;
     }
+
+    0
 }
 
 struct PathNode {
@@ -35,30 +47,36 @@ impl PathNode {
         }
     }
 
-    fn grow(node: Rc<Self>, graph: &Graph) -> impl Iterator<Item = Self> + '_ {
-        graph.neighbors(&node.pos).map(move |vault| Self {
-            score: node.score + node.flow_rate,
-            flow_rate: node.flow_rate,
-            open_valves: node.open_valves.clone(),
-            pos: vault.id,
-            last: Some(node.clone()),
+    fn grow(node: Rc<Self>, graph: &Graph) -> impl Iterator<Item = Rc<Self>> + '_ {
+        graph.neighbors(&node.pos).map(move |vault| {
+            Rc::new(Self {
+                score: node.score + node.flow_rate,
+                flow_rate: node.flow_rate,
+                open_valves: node.open_valves.clone(),
+                pos: vault.id,
+                last: Some(node.clone()),
+            })
         })
     }
 
-    fn open(node: Rc<Self>, graph: &Graph) -> Option<Self> {
+    fn open(node: Rc<Self>, graph: &Graph) -> Option<Rc<Self>> {
         if !node.open_valves.contains(&node.pos) {
             let flow_add = graph.valves.get(&node.pos).unwrap().flow_rate;
+
+            if flow_add == 0 {
+                return None;
+            }
 
             let mut open_valves = node.open_valves.clone();
             open_valves.insert(node.pos);
 
-            Some(Self {
+            Some(Rc::new(Self {
                 score: node.score,
                 flow_rate: node.flow_rate + flow_add,
                 open_valves,
                 pos: node.pos,
                 last: Some(node),
-            })
+            }))
         } else {
             None
         }
