@@ -1,9 +1,7 @@
 pub fn p1(input: &str) -> String {
     let graph = input.parse().unwrap();
 
-    find_max_pressure(&graph);
-
-    todo!();
+    find_max_pressure(&graph).to_string()
 }
 
 pub fn p2(input: &str) -> String {
@@ -25,11 +23,11 @@ fn find_max_pressure(graph: &Graph) -> u32 {
         }
 
         step_nodes = next_step_nodes;
-
-        println!("Step nodes at {}: {}", i, step_nodes.len());
+        step_nodes.sort_by_key(|node| u32::MAX - node.flow_rate);
+        step_nodes.truncate(10000);
     }
 
-    0
+    step_nodes.iter().map(|node| node.score).max().unwrap()
 }
 
 struct PathNode {
