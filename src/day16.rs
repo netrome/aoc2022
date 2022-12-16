@@ -27,7 +27,15 @@ fn find_max_pressure(graph: &Graph) -> u32 {
         step_nodes.truncate(10000);
     }
 
-    step_nodes.iter().map(|node| node.score).max().unwrap()
+    let max_score = step_nodes.iter().map(|node| node.score).max().unwrap();
+    let best_node = step_nodes
+        .iter()
+        .find(|node| node.score == max_score)
+        .unwrap();
+
+    println!("{}", string_path(&PathNode::get_path(best_node.clone())));
+
+    max_score
 }
 
 struct PathNode {
@@ -81,6 +89,16 @@ impl PathNode {
             }))
         } else {
             None
+        }
+    }
+
+    fn get_path(node: Rc<Self>) -> Vec<ValveId> {
+        if let Some(last) = node.last.clone() {
+            let mut path = Self::get_path(last);
+            path.push(node.pos);
+            path
+        } else {
+            vec![node.pos]
         }
     }
 }
@@ -154,6 +172,17 @@ impl ValveId {
     fn genesis() -> Self {
         Self('A', 'A')
     }
+}
+
+impl std::fmt::Display for ValveId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.0, self.1);
+        Ok(())
+    }
+}
+
+fn string_path(path: &[ValveId]) -> String {
+    path.iter().map(|id| format!("{} >", id)).collect()
 }
 
 impl FromStr for ValveId {
