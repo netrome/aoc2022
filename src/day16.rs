@@ -11,35 +11,23 @@ pub fn p2(input: &str) -> String {
 
 fn find_max_pressure(graph: &Graph2) -> u32 {
     let all_nodes = graph.valves.keys().cloned().collect();
-    let mut step_nodes = vec![Rc::new(PathNode::genesis(all_nodes))];
 
-    for i in 0..30 {
-        let mut next_step_nodes = Vec::new();
+    let mut high_score = Rc::new(PathNode::genesis(all_nodes));
+    let mut nodes_to_visit = Vec::new();
+    nodes_to_visit.push(high_score.clone());
 
-        for node in step_nodes {
-            if let Some(opened) = PathNode::open(node.clone(), graph) {
-                next_step_nodes.push(opened);
-            }
-
-            next_step_nodes.extend(PathNode::grow(node, graph));
+    while let Some(node) = nodes_to_visit.pop() {
+        if node.score > high_score.score {
+            high_score = node.clone();
         }
 
-        step_nodes = next_step_nodes;
-        step_nodes.sort_by_key(|node| u32::MAX - node.flow_rate);
-        step_nodes.truncate(10000);
+        nodes_to_visit.append(&mut PathNode::children(node, graph));
     }
 
-    let max_score = step_nodes.iter().map(|node| node.score).max().unwrap();
-    let best_node = step_nodes
-        .iter()
-        .find(|node| node.score == max_score)
-        .unwrap();
-
-    println!("{}", string_path(&PathNode::get_path(best_node.clone())));
-
-    max_score
+    high_score.score
 }
 
+#[derive(Debug)]
 struct PathNode {
     minute: u32,
     score: u32,
@@ -62,7 +50,7 @@ impl PathNode {
     fn children(node: Rc<Self>, graph: &Graph2) -> Vec<Rc<Self>> {
         let mut children = Vec::new();
 
-        for valve_id in node.to_visit {
+        for valve_id in node.to_visit.iter() {
             let next = graph.valves.get(&valve_id).unwrap();
             let dist = next.tunnels.get(&node.pos).unwrap();
 
@@ -121,7 +109,9 @@ impl From<Graph> for Graph2 {
                 tunnels: distances,
             };
 
-            valves.insert(valve.id, valve);
+            if valve.flow_rate > 0 || valve.id == ValveId::genesis() {
+                valves.insert(valve.id, valve);
+            }
         }
 
         Self { valves }
@@ -150,10 +140,10 @@ impl Graph {
         while let Some((valve, dist)) = to_explore.pop_front() {
             if !distances.contains_key(&valve) {
                 distances.insert(valve, dist);
-            }
 
-            for other in self.neighbors(&valve) {
-                to_explore.push_back((other.id, dist + 1))
+                for other in self.neighbors(&valve) {
+                    to_explore.push_back((other.id, dist + 1))
+                }
             }
         }
 
@@ -248,6 +238,7 @@ impl FromStr for ValveId {
 }
 
 use std::{
+    char::UNICODE_VERSION,
     collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, HashSet, VecDeque},
     rc::Rc,
     str::{FromStr, RSplitTerminator},
