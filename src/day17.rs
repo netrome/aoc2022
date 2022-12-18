@@ -3,16 +3,24 @@ pub fn p1(input: &str) -> String {
     let mut chamber = Chamber::new();
     chamber.insert_rock(rocks_iter.next().unwrap());
 
-    for push in pushes(input).take(2022) {
+    let mut fallen_rocks = 0;
+
+    for push in pushes(input) {
         chamber.push(push);
         chamber.fall();
 
         if chamber.falling_rock.is_none() {
+            fallen_rocks += 1;
+
+            if fallen_rocks == 2022 {
+                break;
+            }
+
             chamber.insert_rock(rocks_iter.next().unwrap())
         }
     }
 
-    chamber.height.to_string()
+    (chamber.height + 1).to_string()
 }
 
 pub fn p2(input: &str) -> String {
@@ -37,6 +45,7 @@ fn pushes(input: &str) -> impl Iterator<Item = Push> + '_ {
         .cycle()
 }
 
+#[derive(Debug, Clone)]
 struct Chamber {
     items: HashSet<Pos>,
     falling_rock: Option<(Pos, Rock)>,
@@ -56,67 +65,78 @@ impl Chamber {
         let rock = self.falling_rock.as_ref().unwrap();
         let new_pos = push.on(&rock.0);
 
-        if new_pos.0 + rock.1.width < 7 {
+        if new_pos.0 + rock.1.width < 7 && !self.is_collision(new_pos) {
             self.falling_rock.as_mut().unwrap().0 = new_pos;
         }
     }
 
-    fn rock_points(&self) -> Vec<Pos> {
+    fn is_collision(&self, new_pos: Pos) -> bool {
         let rock = self.falling_rock.as_ref().unwrap();
 
         rock.1
             .points
             .iter()
-            .map(|point| (rock.0 .0 + point.0, rock.0 .1 + point.1))
-            .collect()
+            .map(|point| (new_pos.0 + point.0, new_pos.1 + point.1))
+            .any(|point| Self::out_of_bounds(&point) || self.items.contains(&point))
+    }
+
+    fn out_of_bounds(pos: &Pos) -> bool {
+        pos.0 >= 7
     }
 
     fn fall(&mut self) {
-        let rock = self.falling_rock.as_ref().unwrap();
+        let rock_position = self.falling_rock.as_ref().unwrap().0;
+        let next_position = (rock_position.0, rock_position.1.saturating_sub(1));
 
-        if self
-            .rock_points()
-            .iter()
-            .any(|pos| pos.1 == 0 || self.items.contains(&(pos.0, pos.1.saturating_sub(1))))
-        {
+        if rock_position == next_position || self.is_collision(next_position) {
             self.materialize();
         } else {
-            self.falling_rock.as_mut().unwrap().0 .1 = rock.0 .1.saturating_sub(1);
+            self.falling_rock.as_mut().unwrap().0 = next_position;
         }
     }
 
     fn materialize(&mut self) {
         for point in self.rock_points() {
+            if point.1 > self.height {
+                self.height = point.1
+            }
             self.items.insert(point);
         }
 
-        self.height += self.falling_rock.as_ref().unwrap().1.height;
         self.falling_rock = None;
     }
 
     fn insert_rock(&mut self, rock: Rock) {
         self.falling_rock = Some(((3, self.height + 4), rock));
     }
+
+    fn rock_points(&self) -> Vec<Pos> {
+        self.points(self.falling_rock.as_ref().unwrap().0)
+    }
+
+    fn points(&self, new_pos: Pos) -> Vec<Pos> {
+        let rock = self.falling_rock.as_ref().unwrap();
+
+        rock.1
+            .points
+            .iter()
+            .map(|point| (new_pos.0 + point.0, new_pos.1 + point.1))
+            .collect()
+    }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Rock {
     width: usize,
-    height: usize,
     points: Vec<Pos>,
 }
 
 impl From<&[Pos]> for Rock {
     fn from(points: &[Pos]) -> Self {
         let width = points.iter().map(|point| point.1).max().unwrap() + 1;
-        let height = points.iter().map(|point| point.0).max().unwrap() + 1;
 
         let points = points.into_iter().cloned().collect();
-        Self {
-            width,
-            height,
-            points,
-        }
+        Self { width, points }
     }
 }
 
