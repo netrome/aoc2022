@@ -6,18 +6,13 @@ pub fn p1(input: &str) -> String {
     let mut fallen_rocks = 0;
 
     for push in pushes(input) {
-        println!("{}", chamber.show());
-        println!("Height: {}", chamber.height);
-        println!("--------------");
         chamber.push(push);
         chamber.fall();
 
         if chamber.falling_rock.is_none() {
-            println!("{}", chamber.show());
-            println!("--------------");
             fallen_rocks += 1;
 
-            if fallen_rocks == 3 {
+            if fallen_rocks == 2022 {
                 break;
             }
 
@@ -25,7 +20,7 @@ pub fn p1(input: &str) -> String {
         }
     }
 
-    (chamber.height + 1).to_string()
+    chamber.height.to_string()
 }
 
 pub fn p2(input: &str) -> String {
@@ -70,7 +65,7 @@ impl Chamber {
         let rock = self.falling_rock.as_ref().unwrap();
         let new_pos = push.on(&rock.0);
 
-        if new_pos.0 + rock.1.width < 7 && !self.is_collision(new_pos) {
+        if !self.is_collision(new_pos) {
             self.falling_rock.as_mut().unwrap().0 = new_pos;
         }
     }
@@ -78,11 +73,16 @@ impl Chamber {
     fn is_collision(&self, new_pos: Pos) -> bool {
         let rock = self.falling_rock.as_ref().unwrap();
 
-        rock.1
+        let ans = rock
+            .1
             .points
             .iter()
             .map(|point| (new_pos.0 + point.0, new_pos.1 + point.1))
-            .any(|point| Self::out_of_bounds(&point) || self.items.contains(&point))
+            .any(|point| Self::out_of_bounds(&point) || self.items.contains(&point));
+
+        if ans {}
+
+        ans
     }
 
     fn out_of_bounds(pos: &Pos) -> bool {
@@ -137,8 +137,8 @@ impl Chamber {
         };
 
         let mut out = Vec::new();
-        for y in (0..self.height + 10).rev() {
-            for x in 0..10 {
+        for y in (0..self.height + 9).rev() {
+            for x in 0..7 {
                 let is_item = self.items.contains(&(x, y));
                 let is_falling = rock_points.contains(&(x, y));
 
