@@ -24,7 +24,55 @@ pub fn p1(input: &str) -> String {
 }
 
 pub fn p2(input: &str) -> String {
-    todo!();
+    let mut rocks_iter = rocks();
+    let mut chamber = Chamber::new();
+    chamber.insert_rock(rocks_iter.next().unwrap());
+
+    let mut fallen_rocks = 0;
+
+    let cycle_length = input.trim().len() * 5;
+
+    for push in pushes(input).take(cycle_length) {
+        chamber.push(push);
+        chamber.fall();
+
+        if chamber.falling_rock.is_none() {
+            fallen_rocks += 1;
+
+            chamber.insert_rock(rocks_iter.next().unwrap())
+        }
+    }
+
+    let height_after_first_cycle = chamber.height;
+    let rocks_after_first_cycle = fallen_rocks;
+    let mut height_diffs_in_cycle = Vec::new();
+
+    for push in pushes(input).take(cycle_length) {
+        chamber.push(push);
+        chamber.fall();
+
+        if chamber.falling_rock.is_none() {
+            fallen_rocks += 1;
+            height_diffs_in_cycle.push(chamber.height - height_after_first_cycle);
+
+            chamber.insert_rock(rocks_iter.next().expect("Meh"))
+        }
+    }
+
+    let height_delta = chamber.height - height_after_first_cycle;
+    let rocks_delta = fallen_rocks - rocks_after_first_cycle;
+
+    let remaining_full_cycles = (1000000000000usize - fallen_rocks) / rocks_delta;
+    let height_after_last_full_cycle = chamber.height + remaining_full_cycles * height_delta;
+
+    let remaining_rocks_to_simulate = (1000000000000usize - fallen_rocks) % rocks_delta;
+
+    let height = height_after_last_full_cycle
+        + height_diffs_in_cycle
+            .get(remaining_rocks_to_simulate - 1)
+            .expect("Waaaat?");
+
+    height.to_string()
 }
 
 fn rocks() -> impl Iterator<Item = Rock> {
@@ -62,7 +110,7 @@ impl Chamber {
     }
 
     fn push(&mut self, push: Push) {
-        let rock = self.falling_rock.as_ref().unwrap();
+        let rock = self.falling_rock.as_ref().expect("Whyyy?");
         let new_pos = push.on(&rock.0);
 
         if !self.is_collision(new_pos) {
