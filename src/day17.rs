@@ -6,13 +6,18 @@ pub fn p1(input: &str) -> String {
     let mut fallen_rocks = 0;
 
     for push in pushes(input) {
+        println!("{}", chamber.show());
+        println!("Height: {}", chamber.height);
+        println!("--------------");
         chamber.push(push);
         chamber.fall();
 
         if chamber.falling_rock.is_none() {
+            println!("{}", chamber.show());
+            println!("--------------");
             fallen_rocks += 1;
 
-            if fallen_rocks == 2022 {
+            if fallen_rocks == 3 {
                 break;
             }
 
@@ -97,8 +102,8 @@ impl Chamber {
 
     fn materialize(&mut self) {
         for point in self.rock_points() {
-            if point.1 > self.height {
-                self.height = point.1
+            if point.1 >= self.height {
+                self.height = point.1 + 1
             }
             self.items.insert(point);
         }
@@ -107,7 +112,7 @@ impl Chamber {
     }
 
     fn insert_rock(&mut self, rock: Rock) {
-        self.falling_rock = Some(((3, self.height + 4), rock));
+        self.falling_rock = Some(((2, self.height + 3), rock));
     }
 
     fn rock_points(&self) -> Vec<Pos> {
@@ -122,6 +127,34 @@ impl Chamber {
             .iter()
             .map(|point| (new_pos.0 + point.0, new_pos.1 + point.1))
             .collect()
+    }
+
+    fn show(&self) -> String {
+        let rock_points: HashSet<_> = if self.falling_rock.is_some() {
+            self.rock_points().into_iter().collect()
+        } else {
+            HashSet::new()
+        };
+
+        let mut out = Vec::new();
+        for y in (0..self.height + 10).rev() {
+            for x in 0..10 {
+                let is_item = self.items.contains(&(x, y));
+                let is_falling = rock_points.contains(&(x, y));
+
+                let c = match (is_item, is_falling) {
+                    (true, true) => '$',
+                    (true, false) => '#',
+                    (false, true) => 'o',
+                    (false, false) => '.',
+                };
+
+                out.push(c)
+            }
+            out.push('\n')
+        }
+
+        out.into_iter().collect()
     }
 }
 
