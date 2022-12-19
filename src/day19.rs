@@ -24,32 +24,27 @@ fn maximize_geodes(blueprint: &Blueprint, minutes: usize) -> usize {
     for minute in 0..minutes {
         println!("Minute: {}, size: {}", minute, search.len());
         for mut factory in search.drain(..) {
-            let turn_resources = factory.resources.clone();
-
-            factory.minute += 1;
-            factory.resources.add(&factory.income);
-
             if factory.minute == minutes {
                 max_geodes = max_geodes.max(factory.resources.get(&Resource::Geode));
             } else {
                 for robot in blueprint.robots.iter() {
-                    if let Some(mut resources) = turn_resources.try_sub(&robot.price) {
+                    if let Some(mut resources) = factory.resources.try_sub(&robot.price) {
                         let mut income = factory.income.clone();
-                        resources.add(&factory.income);
+                        resources.add(&income);
                         income.add_single(robot.mines, 1);
 
                         let new_factory = Factory {
-                            minute: factory.minute,
+                            minute: factory.minute + 1,
                             resources,
                             income,
                         };
-
-                        let score = new_factory.geode_upper_bound(minutes) + factory.minute * 4;
 
                         next_search.insert(new_factory);
                     }
                 }
 
+                factory.minute += 1;
+                factory.resources.add(&factory.income);
                 next_search.insert(factory);
             }
         }
@@ -118,15 +113,17 @@ impl Balance {
     }
 
     fn try_sub(&self, other: &Self) -> Option<Self> {
-        other
-            .0
-            .iter()
-            .map(|(resource, diff)| {
-                self.0
-                    .get(resource)
-                    .and_then(|amount| amount.checked_sub(*diff).map(|res| (*resource, res)))
-            })
-            .collect()
+        let mut result = self.clone();
+
+        for (resource, diff) in other.0.iter() {
+            if let Some(res) = self.get(resource).checked_sub(*diff) {
+                result.0.insert(*resource, res);
+            } else {
+                return None;
+            }
+        }
+
+        Some(result)
     }
 
     fn add(&mut self, other: &Self) {
