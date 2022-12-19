@@ -1,7 +1,7 @@
 pub fn p1(input: &str) -> String {
     for bp in parse_input(input) {
         println!("BP: {:?}", bp);
-        println!("Max geodes: {:?}", maximize_geodes(&bp, 18));
+        println!("Max geodes: {:?}", maximize_geodes(&bp, 24));
     }
 
     todo!();
@@ -16,10 +16,18 @@ fn parse_input(input: &str) -> impl IntoIterator<Item = Blueprint> + '_ {
 }
 
 fn maximize_geodes(blueprint: &Blueprint, minutes: usize) -> usize {
-    let mut search = vec![Factory::genesis()];
+    let mut search = BinaryHeap::new();
+    search.push(SearchPoint {
+        score: 0,
+        factory: Factory::genesis(),
+    });
     let mut max_geodes = 0;
 
-    while let Some(mut factory) = search.pop() {
+    while let Some(SearchPoint {
+        score: _,
+        factory: mut factory,
+    }) = search.pop()
+    {
         let turn_resources = factory.resources.clone();
 
         factory.minute += 1;
@@ -40,17 +48,47 @@ fn maximize_geodes(blueprint: &Blueprint, minutes: usize) -> usize {
                         income,
                     };
 
+                    let score = new_factory.geode_upper_bound(minutes);
+
                     if new_factory.geode_upper_bound(minutes) > max_geodes {
-                        search.push(new_factory);
+                        let search_point = SearchPoint {
+                            score,
+                            factory: new_factory,
+                        };
+
+                        search.push(search_point);
                     }
                 }
             }
 
-            search.push(factory);
+            let search_point = SearchPoint {
+                score: factory.geode_upper_bound(minutes),
+                factory,
+            };
+
+            search.push(search_point);
         }
     }
 
     max_geodes
+}
+
+#[derive(PartialEq, Eq)]
+struct SearchPoint {
+    score: usize,
+    factory: Factory,
+}
+
+impl std::cmp::Ord for SearchPoint {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.score.cmp(&other.score)
+    }
+}
+
+impl std::cmp::PartialOrd for SearchPoint {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 fn factories_per_minute(f: &[Factory]) -> HashMap<usize, usize> {
@@ -72,7 +110,7 @@ struct Robot {
     price: Balance,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 struct Factory {
     minute: usize,
     resources: Balance,
@@ -102,7 +140,7 @@ impl Factory {
     }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 struct Balance(HashMap<Resource, usize>);
 
 impl Balance {
@@ -158,7 +196,7 @@ impl FromStr for Blueprint {
         let (id, robots_str) =
             sscanf::sscanf!(s.trim(), "Blueprint {usize}: {String}.").expect("Waaat");
 
-        let robots = robots_str.trim().split(".").map(parse_robot).collect();
+        let robots: Vec<_> = robots_str.trim().split(".").map(parse_robot).collect();
 
         Ok(Self { id, robots })
     }
@@ -194,7 +232,12 @@ impl FromStr for Resource {
     }
 }
 
-use std::{collections::HashMap, iter::FromIterator, ops::Deref, str::FromStr};
+use std::{
+    collections::{BinaryHeap, HashMap},
+    iter::FromIterator,
+    ops::Deref,
+    str::FromStr,
+};
 
 use crate::solution::Solution;
 inventory::submit!(Solution::new(19, 1, p1));
