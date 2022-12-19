@@ -1,4 +1,7 @@
 pub fn p1(input: &str) -> String {
+    for bp in parse_input(input) {
+        println!("BP: {:?}", bp);
+    }
     todo!();
 }
 
@@ -6,9 +9,20 @@ pub fn p2(input: &str) -> String {
     todo!();
 }
 
+fn parse_input(input: &str) -> impl IntoIterator<Item = Blueprint> + '_ {
+    input.trim().lines().map(|line| line.parse().unwrap())
+}
+
+#[derive(Debug)]
 struct Blueprint {
     id: usize,
-    prices: Vec<(Resource, Balance)>,
+    robots: Vec<Robot>,
+}
+
+#[derive(Debug)]
+struct Robot {
+    mines: Resource,
+    price: Balance,
 }
 
 struct Factory {
@@ -57,12 +71,27 @@ enum Resource {
     Geode,
 }
 
-fn parse_robot(s: &str) -> (Resource, Balance) {
-    let (resource, cost) =
+impl FromStr for Blueprint {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (id, robots_str) =
+            sscanf::sscanf!(s.trim(), "Blueprint {usize}: {String}.").expect("Waaat");
+
+        let robots = robots_str.trim().split(".").map(parse_robot).collect();
+
+        Ok(Self { id, robots })
+    }
+}
+
+fn parse_robot(s: &str) -> Robot {
+    let (resource, price_str) =
         sscanf::sscanf!(s.trim(), "Each {String} robot costs {String}").expect("Noope");
 
-    let cost = cost.split("and").map(parse_cost).collect();
-    (resource.parse().expect("Shit"), cost)
+    let price = price_str.split("and").map(parse_cost).collect();
+    let mines = resource.parse().expect("Shit");
+
+    Robot { mines, price }
 }
 
 fn parse_cost(s: &str) -> (Resource, usize) {
