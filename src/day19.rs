@@ -140,12 +140,12 @@ impl Factory {
     }
 }
 
-#[derive(Debug, Default, Clone, Eq, PartialEq)]
-struct Balance(HashMap<Resource, usize>);
+#[derive(Debug, Default, Clone, Eq, PartialEq, Hash)]
+struct Balance(BTreeMap<Resource, usize>);
 
 impl Balance {
     fn new() -> Self {
-        Self(HashMap::new())
+        Self(BTreeMap::new())
     }
 
     fn try_sub(&self, other: &Self) -> Option<Self> {
@@ -177,11 +177,11 @@ impl Balance {
 
 impl FromIterator<(Resource, usize)> for Balance {
     fn from_iter<T: IntoIterator<Item = (Resource, usize)>>(iter: T) -> Self {
-        Self(HashMap::from_iter(iter))
+        Self(BTreeMap::from_iter(iter))
     }
 }
 
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, Ord, PartialOrd)]
 enum Resource {
     Ore,
     Clay,
@@ -233,7 +233,7 @@ impl FromStr for Resource {
 }
 
 use std::{
-    collections::{BinaryHeap, HashMap},
+    collections::{BTreeMap, BinaryHeap, HashMap},
     iter::FromIterator,
     ops::Deref,
     str::FromStr,
