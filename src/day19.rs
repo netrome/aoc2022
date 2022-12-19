@@ -16,79 +16,48 @@ fn parse_input(input: &str) -> impl IntoIterator<Item = Blueprint> + '_ {
 }
 
 fn maximize_geodes(blueprint: &Blueprint, minutes: usize) -> usize {
-    let mut search = BinaryHeap::new();
-    search.push(SearchPoint {
-        score: 0,
-        factory: Factory::genesis(),
-    });
+    let mut search = vec![Factory::genesis()];
+    let mut next_search = HashSet::new();
+
     let mut max_geodes = 0;
 
-    while let Some(SearchPoint {
-        score: _,
-        factory: mut factory,
-    }) = search.pop()
-    {
-        let turn_resources = factory.resources.clone();
+    for minute in 0..minutes {
+        println!("Minute: {}, size: {}", minute, search.len());
+        for mut factory in search.drain(..) {
+            let turn_resources = factory.resources.clone();
 
-        factory.minute += 1;
-        factory.resources.add(&factory.income);
+            factory.minute += 1;
+            factory.resources.add(&factory.income);
 
-        if factory.minute == minutes {
-            max_geodes = max_geodes.max(factory.resources.get(&Resource::Geode));
-        } else {
-            for robot in blueprint.robots.iter() {
-                if let Some(mut resources) = turn_resources.try_sub(&robot.price) {
-                    let mut income = factory.income.clone();
-                    resources.add(&factory.income);
-                    income.add_single(robot.mines, 1);
+            if factory.minute == minutes {
+                max_geodes = max_geodes.max(factory.resources.get(&Resource::Geode));
+            } else {
+                for robot in blueprint.robots.iter() {
+                    if let Some(mut resources) = turn_resources.try_sub(&robot.price) {
+                        let mut income = factory.income.clone();
+                        resources.add(&factory.income);
+                        income.add_single(robot.mines, 1);
 
-                    let new_factory = Factory {
-                        minute: factory.minute,
-                        resources,
-                        income,
-                    };
-
-                    let score = new_factory.geode_upper_bound(minutes);
-
-                    if new_factory.geode_upper_bound(minutes) > max_geodes {
-                        let search_point = SearchPoint {
-                            score,
-                            factory: new_factory,
+                        let new_factory = Factory {
+                            minute: factory.minute,
+                            resources,
+                            income,
                         };
 
-                        search.push(search_point);
+                        let score = new_factory.geode_upper_bound(minutes) + factory.minute * 4;
+
+                        next_search.insert(new_factory);
                     }
                 }
+
+                next_search.insert(factory);
             }
-
-            let search_point = SearchPoint {
-                score: factory.geode_upper_bound(minutes),
-                factory,
-            };
-
-            search.push(search_point);
         }
+        search.extend(next_search);
+        next_search = HashSet::new();
     }
 
     max_geodes
-}
-
-#[derive(PartialEq, Eq)]
-struct SearchPoint {
-    score: usize,
-    factory: Factory,
-}
-
-impl std::cmp::Ord for SearchPoint {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.score.cmp(&other.score)
-    }
-}
-
-impl std::cmp::PartialOrd for SearchPoint {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
 }
 
 fn factories_per_minute(f: &[Factory]) -> HashMap<usize, usize> {
@@ -110,7 +79,7 @@ struct Robot {
     price: Balance,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Hash)]
 struct Factory {
     minute: usize,
     resources: Balance,
@@ -233,7 +202,7 @@ impl FromStr for Resource {
 }
 
 use std::{
-    collections::{BTreeMap, BinaryHeap, HashMap},
+    collections::{BTreeMap, BinaryHeap, HashMap, HashSet},
     iter::FromIterator,
     ops::Deref,
     str::FromStr,
