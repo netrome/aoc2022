@@ -1,7 +1,7 @@
 pub fn p1(input: &str) -> String {
     for bp in parse_input(input) {
         println!("BP: {:?}", bp);
-        println!("Max geodes: {:?}", maximize_geodes(&bp, 24));
+        println!("Max geodes: {:?}", maximize_geodes(&bp, 18));
     }
 
     todo!();
@@ -20,15 +20,18 @@ fn maximize_geodes(blueprint: &Blueprint, minutes: usize) -> usize {
     let mut max_geodes = 0;
 
     while let Some(mut factory) = search.pop() {
+        let turn_resources = factory.resources.clone();
+
         factory.minute += 1;
         factory.resources.add(&factory.income);
 
         if factory.minute == minutes {
-            max_geodes = max_geodes.max(factory.resources.get(&Resource::Ore));
+            max_geodes = max_geodes.max(factory.resources.get(&Resource::Geode));
         } else {
             for robot in blueprint.robots.iter() {
-                if let Some(resources) = factory.resources.try_sub(&robot.price) {
+                if let Some(mut resources) = turn_resources.try_sub(&robot.price) {
                     let mut income = factory.income.clone();
+                    resources.add(&factory.income);
                     income.add_single(robot.mines, 1);
 
                     let new_factory = Factory {
@@ -37,14 +40,24 @@ fn maximize_geodes(blueprint: &Blueprint, minutes: usize) -> usize {
                         income,
                     };
 
-                    search.push(new_factory);
+                    if new_factory.geode_upper_bound(minutes) > max_geodes {
+                        search.push(new_factory);
+                    }
                 }
             }
+
             search.push(factory);
         }
     }
 
     max_geodes
+}
+
+fn factories_per_minute(f: &[Factory]) -> HashMap<usize, usize> {
+    f.iter().fold(HashMap::new(), |mut acc, val| {
+        *acc.entry(val.minute).or_insert(0) += 1;
+        acc
+    })
 }
 
 #[derive(Debug)]
@@ -59,6 +72,7 @@ struct Robot {
     price: Balance,
 }
 
+#[derive(Debug)]
 struct Factory {
     minute: usize,
     resources: Balance,
@@ -76,6 +90,16 @@ impl Factory {
             income,
         }
     }
+
+    fn geode_upper_bound(&self, minute: usize) -> usize {
+        let remaining_minutes = minute.saturating_sub(self.minute);
+
+        let upper_bound_extra_earnings = (remaining_minutes + 1) * remaining_minutes / 2;
+
+        self.resources.get(&Resource::Geode)
+            + self.income.get(&Resource::Geode) * remaining_minutes
+            + upper_bound_extra_earnings
+    }
 }
 
 #[derive(Debug, Default, Clone)]
@@ -87,12 +111,13 @@ impl Balance {
     }
 
     fn try_sub(&self, other: &Self) -> Option<Self> {
-        self.0
+        other
+            .0
             .iter()
-            .map(|(resource, amount)| {
-                amount
-                    .checked_sub(*other.0.get(resource).unwrap_or(&0))
-                    .map(|diff| (*resource, diff))
+            .map(|(resource, diff)| {
+                self.0
+                    .get(resource)
+                    .and_then(|amount| amount.checked_sub(*diff).map(|res| (*resource, res)))
             })
             .collect()
     }
@@ -169,7 +194,7 @@ impl FromStr for Resource {
     }
 }
 
-use std::{collections::HashMap, iter::FromIterator, str::FromStr};
+use std::{collections::HashMap, iter::FromIterator, ops::Deref, str::FromStr};
 
 use crate::solution::Solution;
 inventory::submit!(Solution::new(19, 1, p1));
