@@ -1,7 +1,9 @@
 pub fn p1(input: &str) -> String {
     for bp in parse_input(input) {
         println!("BP: {:?}", bp);
+        println!("Max geodes: {:?}", maximize_geodes(&bp, 24));
     }
+
     todo!();
 }
 
@@ -11,6 +13,38 @@ pub fn p2(input: &str) -> String {
 
 fn parse_input(input: &str) -> impl IntoIterator<Item = Blueprint> + '_ {
     input.trim().lines().map(|line| line.parse().unwrap())
+}
+
+fn maximize_geodes(blueprint: &Blueprint, minutes: usize) -> usize {
+    let mut search = vec![Factory::genesis()];
+    let mut max_geodes = 0;
+
+    while let Some(mut factory) = search.pop() {
+        factory.minute += 1;
+        factory.resources.add(&factory.income);
+
+        if factory.minute == minutes {
+            max_geodes = max_geodes.max(factory.resources.get(&Resource::Ore));
+        } else {
+            for robot in blueprint.robots.iter() {
+                if let Some(resources) = factory.resources.try_sub(&robot.price) {
+                    let mut income = factory.income.clone();
+                    income.add_single(robot.mines, 1);
+
+                    let new_factory = Factory {
+                        minute: factory.minute,
+                        resources,
+                        income,
+                    };
+
+                    search.push(new_factory);
+                }
+            }
+            search.push(factory);
+        }
+    }
+
+    max_geodes
 }
 
 #[derive(Debug)]
@@ -31,10 +65,27 @@ struct Factory {
     income: Balance,
 }
 
-#[derive(Debug)]
+impl Factory {
+    fn genesis() -> Self {
+        let mut income = Balance::new();
+        income.add_single(Resource::Ore, 1);
+
+        Self {
+            minute: 0,
+            resources: Balance::new(),
+            income,
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone)]
 struct Balance(HashMap<Resource, usize>);
 
 impl Balance {
+    fn new() -> Self {
+        Self(HashMap::new())
+    }
+
     fn try_sub(&self, other: &Self) -> Option<Self> {
         self.0
             .iter()
@@ -54,6 +105,10 @@ impl Balance {
 
     fn add_single(&mut self, resource: Resource, amount: usize) {
         *self.0.entry(resource).or_insert(0) += amount;
+    }
+
+    fn get(&self, resource: &Resource) -> usize {
+        *self.0.get(resource).unwrap_or(&0)
     }
 }
 
