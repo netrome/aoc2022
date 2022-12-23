@@ -68,13 +68,21 @@ struct Blueprint {
     robots: Vec<Robot>,
 }
 
+impl Blueprint {
+    fn next_factories<'a>(&'a self, factory: &'a Factory) -> impl Iterator<Item = Factory> + 'a {
+        self.robots
+            .iter()
+            .filter_map(|robot| factory.forecast_purchase(robot))
+    }
+}
+
 #[derive(Debug)]
 struct Robot {
     mines: Resource,
     price: Balance,
 }
 
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone)]
 struct Factory {
     minute: usize,
     resources: Balance,
@@ -101,6 +109,44 @@ impl Factory {
         self.resources.get(&Resource::Geode)
             + self.income.get(&Resource::Geode) * remaining_minutes
             + upper_bound_extra_earnings
+    }
+
+    fn geodes_at_minute(&self, minute: usize) -> usize {
+        self.resources.get(&Resource::Geode)
+            + self.income.get(&Resource::Geode) * (minute - self.minute)
+    }
+
+    fn forecast_purchase(&self, robot: &Robot) -> Option<Self> {
+        let mut minutes_until_purchase = 0;
+
+        if !robot
+            .price
+            .0
+            .keys()
+            .all(|resource| self.resources.0.contains_key(resource))
+        {
+            return None;
+        }
+
+        let mut forecast = self.clone();
+
+        loop {
+            match forecast.resources.try_sub(&robot.price) {
+                Some(resources) => {
+                    forecast.resources = resources;
+                    forecast.step()
+                }
+                None => forecast.step(),
+            }
+        }
+
+        forecast.resources.add_single(robot.mines, 1);
+        Some(forecast)
+    }
+
+    fn step(&mut self) {
+        self.minute += 1;
+        self.resources.add(&self.income);
     }
 }
 
