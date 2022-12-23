@@ -1,6 +1,5 @@
 pub fn p1(input: &str) -> String {
     for bp in parse_input(input) {
-        println!("BP: {:?}", bp);
         println!("Max geodes: {:?}", maximize_geodes(&bp, 24));
     }
 
@@ -16,13 +15,18 @@ fn parse_input(input: &str) -> impl IntoIterator<Item = Blueprint> + '_ {
 }
 
 fn maximize_geodes(blueprint: &Blueprint, minutes: usize) -> usize {
-    let mut search = vec![Factory::genesis()];
+    let mut search = Vec::new();
+    search.push(Factory::genesis());
     let mut visited: HashSet<Factory> = HashSet::new();
 
     let mut max_geodes = 0;
 
     while let Some(factory) = search.pop() {
         if visited.contains(&factory) {
+            continue;
+        }
+
+        if factory.geode_upper_bound(minutes) <= max_geodes {
             continue;
         }
 
@@ -239,7 +243,7 @@ impl FromStr for Resource {
 }
 
 use std::{
-    collections::{BTreeMap, BinaryHeap, HashMap, HashSet},
+    collections::{BTreeMap, BinaryHeap, HashMap, HashSet, VecDeque},
     iter::FromIterator,
     ops::Deref,
     str::FromStr,
