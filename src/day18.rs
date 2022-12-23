@@ -55,7 +55,7 @@ impl Grid {
     fn surface_area_2(&self, steam: &HashSet<Cube>) -> usize {
         self.cubes
             .iter()
-            .map(|cube| cube.surface_area_2(&steam))
+            .map(|cube| cube.surface_area_2(steam))
             .sum()
     }
 }
@@ -88,14 +88,14 @@ impl Cube {
     fn surface_area(&self, grid: &Grid) -> usize {
         self.neighbors()
             .into_iter()
-            .filter(|cube| !grid.cubes.contains(&cube))
+            .filter(|cube| !grid.cubes.contains(cube))
             .count()
     }
 
     fn surface_area_2(&self, steam: &HashSet<Cube>) -> usize {
         self.neighbors()
             .into_iter()
-            .filter(|cube| steam.contains(&cube))
+            .filter(|cube| steam.contains(cube))
             .count()
     }
 

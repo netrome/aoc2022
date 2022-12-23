@@ -132,10 +132,7 @@ enum Object {
 
 impl Object {
     fn is_sand(&self) -> bool {
-        match self {
-            Self::Sand => true,
-            _ => false,
-        }
+        matches!(self, Self::Sand)
     }
 }
 
@@ -148,7 +145,7 @@ impl RockPath {
 
         let mut line_start = iter.next().unwrap();
 
-        while let Some(line_end) = iter.next() {
+        for line_end in iter {
             let mut new_positions = line_start.interpolate(&line_end);
             all_positions.append(&mut new_positions);
 

@@ -17,7 +17,7 @@ fn find_beacon(world: &World, ymax: i64) -> i64 {
             let mut inter = intervals.into_iter();
             let mut current = inter.next().unwrap();
 
-            while let Some(next) = inter.next() {
+            for next in inter {
                 if next.0 - current.1 == 2 {
                     return (next.0 + 1) * 4000000 + y;
                 }
@@ -62,7 +62,7 @@ fn find_intervals(world: &World, y: i64) -> Vec<Interval> {
 
     let mut int1 = iter.next().expect("No intervals at this y");
 
-    while let Some(int2) = iter.next() {
+    for int2 in iter {
         if int1.overlaps(&int2) {
             int1 = int1.merge(&int2);
         } else {

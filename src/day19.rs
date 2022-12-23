@@ -210,7 +210,7 @@ impl FromStr for Blueprint {
         let (id, robots_str) =
             sscanf::sscanf!(s.trim(), "Blueprint {usize}: {String}.").expect("Waaat");
 
-        let robots: Vec<_> = robots_str.trim().split(".").map(parse_robot).collect();
+        let robots: Vec<_> = robots_str.trim().split('.').map(parse_robot).collect();
 
         Ok(Self { id, robots })
     }

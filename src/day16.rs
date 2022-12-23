@@ -74,12 +74,12 @@ impl PathNode {
         let mut children = Vec::new();
 
         for valve_id in node.to_visit.iter() {
-            let next = graph.valves.get(&valve_id).unwrap();
+            let next = graph.valves.get(valve_id).unwrap();
             let dist = next.tunnels.get(&node.pos).unwrap();
 
             let remaining_time = max_time.saturating_sub(node.minute + dist + 1);
             let mut to_visit = node.to_visit.clone();
-            to_visit.remove(&valve_id);
+            to_visit.remove(valve_id);
 
             if remaining_time > 0 {
                 let child = Rc::new(Self {
@@ -150,8 +150,8 @@ impl Graph {
         to_explore.push_back((*valve, 0));
 
         while let Some((valve, dist)) = to_explore.pop_front() {
-            if !distances.contains_key(&valve) {
-                distances.insert(valve, dist);
+            if let std::collections::hash_map::Entry::Vacant(e) = distances.entry(valve) {
+                e.insert(dist);
 
                 for other in self.neighbors(&valve) {
                     to_explore.push_back((other.id, dist + 1))

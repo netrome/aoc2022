@@ -214,7 +214,7 @@ struct Rock {
 
 impl From<&[Pos]> for Rock {
     fn from(points: &[Pos]) -> Self {
-        let points = points.into_iter().cloned().collect();
+        let points = points.to_vec();
         Self { points }
     }
 }
