@@ -15,7 +15,25 @@ pub fn p1(input: &str) -> String {
 }
 
 pub fn p2(input: &str) -> String {
-    todo!();
+    let mut decrypter = parse_input(input);
+
+    for entry in decrypter.entries.iter_mut() {
+        entry.val *= 811589153;
+    }
+
+    for _ in 0..10 {
+        for id in 0..decrypter.entries.len() {
+            decrypter.move_number(id);
+        }
+    }
+
+    let zero_idx = decrypter.index_of_val(0);
+
+    [1000, 2000, 3000]
+        .iter()
+        .map(|offset| decrypter.entries[(zero_idx + offset) % decrypter.entries.len()].val)
+        .sum::<i64>()
+        .to_string()
 }
 
 fn parse_input(input: &str) -> Decrypter {
