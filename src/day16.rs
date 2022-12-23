@@ -18,7 +18,7 @@ fn find_max_pressure_with_elephant(graph: &Graph2) -> u32 {
 
     let mut max_pressure = 0;
 
-    let mut i = 0;
+    let _i = 0;
 
     for elephant_share in all_nodes.iter().powerset() {
         let elephant_set: HashSet<_> = elephant_share.into_iter().cloned().collect();
@@ -58,17 +58,15 @@ struct PathNode {
     score: u32,
     pos: ValveId,
     to_visit: HashSet<ValveId>,
-    last: Option<Rc<PathNode>>,
 }
 
 impl PathNode {
-    fn genesis(mut to_visit: HashSet<ValveId>) -> Self {
+    fn genesis(to_visit: HashSet<ValveId>) -> Self {
         Self {
             minute: 0,
             score: 0,
             pos: ValveId::genesis(),
             to_visit,
-            last: None,
         }
     }
 
@@ -89,23 +87,12 @@ impl PathNode {
                     score: node.score + next.flow_rate * remaining_time,
                     pos: next.id,
                     to_visit,
-                    last: Some(node.clone()),
                 });
                 children.push(child);
             }
         }
 
         children
-    }
-
-    fn get_path(node: Rc<Self>) -> Vec<ValveId> {
-        if let Some(last) = node.last.clone() {
-            let mut path = Self::get_path(last);
-            path.push(node.pos);
-            path
-        } else {
-            vec![node.pos]
-        }
     }
 }
 
@@ -241,13 +228,9 @@ impl ValveId {
 
 impl std::fmt::Display for ValveId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}{}", self.0, self.1);
+        write!(f, "{}{}", self.0, self.1).unwrap();
         Ok(())
     }
-}
-
-fn string_path(path: &[ValveId]) -> String {
-    path.iter().map(|id| format!("{} >", id)).collect()
 }
 
 impl FromStr for ValveId {
@@ -263,10 +246,9 @@ impl FromStr for ValveId {
 }
 
 use std::{
-    char::UNICODE_VERSION,
-    collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, HashSet, VecDeque},
+    collections::{HashMap, HashSet, VecDeque},
     rc::Rc,
-    str::{FromStr, RSplitTerminator},
+    str::FromStr,
 };
 
 use crate::solution::Solution;

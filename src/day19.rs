@@ -54,13 +54,6 @@ fn maximize_geodes(blueprint: &Blueprint, minutes: usize) -> usize {
     max_geodes
 }
 
-fn factories_per_minute(f: &[Factory]) -> HashMap<usize, usize> {
-    f.iter().fold(HashMap::new(), |mut acc, val| {
-        *acc.entry(val.minute).or_insert(0) += 1;
-        acc
-    })
-}
-
 #[derive(Debug)]
 struct Blueprint {
     id: usize,
@@ -121,7 +114,7 @@ impl Factory {
 
     fn forecast_purchase(&self, robot: &Robot, max_minute: usize) -> Option<Self> {
         //println!("Forecast: {:?}, {:?}, {}", self, robot, max_minute);
-        let mut minutes_until_purchase = 0;
+        let _minutes_until_purchase = 0;
 
         if !robot
             .price
@@ -254,9 +247,8 @@ impl FromStr for Resource {
 }
 
 use std::{
-    collections::{BTreeMap, BinaryHeap, HashMap, HashSet, VecDeque},
+    collections::{BTreeMap, HashSet},
     iter::FromIterator,
-    ops::Deref,
     str::FromStr,
 };
 

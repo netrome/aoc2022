@@ -177,6 +177,7 @@ impl Chamber {
             .collect()
     }
 
+    #[allow(unused)]
     fn show(&self) -> String {
         let rock_points: HashSet<_> = if self.falling_rock.is_some() {
             self.rock_points().into_iter().collect()
@@ -208,16 +209,13 @@ impl Chamber {
 
 #[derive(Clone, Debug)]
 struct Rock {
-    width: usize,
     points: Vec<Pos>,
 }
 
 impl From<&[Pos]> for Rock {
     fn from(points: &[Pos]) -> Self {
-        let width = points.iter().map(|point| point.1).max().unwrap() + 1;
-
         let points = points.into_iter().cloned().collect();
-        Self { width, points }
+        Self { points }
     }
 }
 
