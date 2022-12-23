@@ -1,9 +1,11 @@
 pub fn p1(input: &str) -> String {
+    let mut sum = 0;
     for bp in parse_input(input) {
-        println!("Max geodes: {:?}", maximize_geodes(&bp, 24));
+        //println!("Max geodes: {:?}", maximize_geodes(&bp, 24));
+        sum += quality_level(&bp, 24);
     }
 
-    todo!();
+    sum.to_string()
 }
 
 pub fn p2(input: &str) -> String {
@@ -12,6 +14,10 @@ pub fn p2(input: &str) -> String {
 
 fn parse_input(input: &str) -> impl IntoIterator<Item = Blueprint> + '_ {
     input.trim().lines().map(|line| line.parse().unwrap())
+}
+
+fn quality_level(blueprint: &Blueprint, minutes: usize) -> usize {
+    maximize_geodes(blueprint, minutes) * blueprint.id
 }
 
 fn maximize_geodes(blueprint: &Blueprint, minutes: usize) -> usize {
