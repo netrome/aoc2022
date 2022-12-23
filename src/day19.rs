@@ -17,39 +17,23 @@ fn parse_input(input: &str) -> impl IntoIterator<Item = Blueprint> + '_ {
 
 fn maximize_geodes(blueprint: &Blueprint, minutes: usize) -> usize {
     let mut search = vec![Factory::genesis()];
-    let mut next_search = HashSet::new();
+    let mut visited: HashSet<Factory> = HashSet::new();
 
     let mut max_geodes = 0;
 
-    for minute in 0..minutes {
-        println!("Minute: {}, size: {}", minute, search.len());
-        for mut factory in search.drain(..) {
-            if factory.minute == minutes {
-                max_geodes = max_geodes.max(factory.resources.get(&Resource::Geode));
-            } else {
-                for robot in blueprint.robots.iter() {
-                    if let Some(mut resources) = factory.resources.try_sub(&robot.price) {
-                        let mut income = factory.income.clone();
-                        resources.add(&income);
-                        income.add_single(robot.mines, 1);
-
-                        let new_factory = Factory {
-                            minute: factory.minute + 1,
-                            resources,
-                            income,
-                        };
-
-                        next_search.insert(new_factory);
-                    }
-                }
-
-                factory.minute += 1;
-                factory.resources.add(&factory.income);
-                next_search.insert(factory);
-            }
+    while let Some(factory) = search.pop() {
+        if visited.contains(&factory) {
+            continue;
         }
-        search.extend(next_search);
-        next_search = HashSet::new();
+
+        let geodes_at_end = factory.geodes_at_minute(minutes);
+
+        if geodes_at_end > max_geodes {
+            max_geodes = geodes_at_end;
+        }
+
+        search.extend(blueprint.next_factories(&factory, minutes));
+        visited.insert(factory);
     }
 
     max_geodes
@@ -69,10 +53,14 @@ struct Blueprint {
 }
 
 impl Blueprint {
-    fn next_factories<'a>(&'a self, factory: &'a Factory) -> impl Iterator<Item = Factory> + 'a {
+    fn next_factories<'a>(
+        &'a self,
+        factory: &'a Factory,
+        max_minute: usize,
+    ) -> impl Iterator<Item = Factory> + 'a {
         self.robots
             .iter()
-            .filter_map(|robot| factory.forecast_purchase(robot))
+            .filter_map(move |robot| factory.forecast_purchase(robot, max_minute))
     }
 }
 
@@ -116,14 +104,15 @@ impl Factory {
             + self.income.get(&Resource::Geode) * (minute - self.minute)
     }
 
-    fn forecast_purchase(&self, robot: &Robot) -> Option<Self> {
+    fn forecast_purchase(&self, robot: &Robot, max_minute: usize) -> Option<Self> {
+        //println!("Forecast: {:?}, {:?}, {}", self, robot, max_minute);
         let mut minutes_until_purchase = 0;
 
         if !robot
             .price
             .0
             .keys()
-            .all(|resource| self.resources.0.contains_key(resource))
+            .all(|resource| self.income.0.contains_key(resource))
         {
             return None;
         }
@@ -131,16 +120,21 @@ impl Factory {
         let mut forecast = self.clone();
 
         loop {
+            if forecast.minute >= max_minute {
+                return None;
+            }
+
             match forecast.resources.try_sub(&robot.price) {
                 Some(resources) => {
                     forecast.resources = resources;
-                    forecast.step()
+                    forecast.step();
+                    break;
                 }
                 None => forecast.step(),
             }
         }
 
-        forecast.resources.add_single(robot.mines, 1);
+        forecast.income.add_single(robot.mines, 1);
         Some(forecast)
     }
 
