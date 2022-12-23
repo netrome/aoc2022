@@ -51,7 +51,7 @@ struct Decrypter {
 
 impl Decrypter {
     fn new(items: impl IntoIterator<Item = i64>) -> Self {
-        let mut entries: Vec<Entry> = items
+        let entries: Vec<Entry> = items
             .into_iter()
             .enumerate()
             .map(|(id, val)| Entry { id, val })
@@ -88,8 +88,7 @@ impl Decrypter {
 }
 
 fn modulo(dividend: i64, divisor: usize) -> usize {
-    let ans = modulo_i64(dividend, divisor as i64) as usize;
-    ans
+    modulo_i64(dividend, divisor as i64) as usize
 }
 
 fn modulo_i64(dividend: i64, divisor: i64) -> i64 {
