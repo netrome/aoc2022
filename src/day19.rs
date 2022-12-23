@@ -9,7 +9,12 @@ pub fn p1(input: &str) -> String {
 }
 
 pub fn p2(input: &str) -> String {
-    todo!();
+    let mut prod = 1;
+    for bp in parse_input(input).into_iter().take(3) {
+        prod *= maximize_geodes(&bp, 32);
+    }
+
+    prod.to_string()
 }
 
 fn parse_input(input: &str) -> impl IntoIterator<Item = Blueprint> + '_ {
