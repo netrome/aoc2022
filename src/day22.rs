@@ -119,6 +119,10 @@ impl Santa {
             }
         } else if next_pos.0 == 50 && self.direction == Delta::down() {
             self.warp_23(next_pos)
+        } else if next_pos.0 == 150 && self.direction == Delta::down() {
+            self.warp_46(next_pos)
+        } else if next_pos.1 == 50 && self.direction == Delta::right() {
+            self.warp_64(next_pos)
         } else {
             panic!("Untouched edge")
         };
@@ -128,7 +132,7 @@ impl Santa {
     }
 
     fn warp_16(&self, next_pos: Pos) -> (Pos, Delta) {
-        todo!();
+        (Pos(next_pos.1 + 100, 0), Delta::right())
     }
 
     fn warp_15(&self, next_pos: Pos) -> (Pos, Delta) {
@@ -136,7 +140,7 @@ impl Santa {
     }
 
     fn warp_26(&self, next_pos: Pos) -> (Pos, Delta) {
-        todo!();
+        (Pos(next_pos.0 - 100, 199), Delta::up())
     }
 
     fn warp_24(&self, next_pos: Pos) -> (Pos, Delta) {
@@ -153,6 +157,10 @@ impl Santa {
         (Pos(49 - (next_pos.0 - 100), 149), Delta::left())
     }
 
+    fn warp_46(&self, next_pos: Pos) -> (Pos, Delta) {
+        (Pos(next_pos.1 + 100, 49), Delta::up())
+    }
+
     fn warp_32(&self, next_pos: Pos) -> (Pos, Delta) {
         (Pos(49, next_pos.0), Delta::up())
     }
@@ -162,7 +170,7 @@ impl Santa {
     }
 
     fn warp_62(&self, next_pos: Pos) -> (Pos, Delta) {
-        todo!();
+        (Pos(0, next_pos.0 + 100), Delta::down())
     }
 
     fn warp_64(&self, next_pos: Pos) -> (Pos, Delta) {
@@ -170,15 +178,15 @@ impl Santa {
     }
 
     fn warp_61(&self, next_pos: Pos) -> (Pos, Delta) {
-        todo!();
+        (Pos(0, next_pos.0 - 100), Delta::down())
     }
 
     fn warp_51(&self, next_pos: Pos) -> (Pos, Delta) {
-        todo!();
+        (Pos(149 - next_pos.0, 49), Delta::right())
     }
 
     fn warp_53(&self, next_pos: Pos) -> (Pos, Delta) {
-        todo!();
+        (Pos(next_pos.1 + 50, 50), Delta::right())
     }
 
     fn warp_2d(&self, next_pos: Pos, board: &Board) -> (Pos, Obj, Delta) {
