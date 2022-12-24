@@ -39,7 +39,28 @@ impl Santa {
     }
 
     fn walk(&mut self, board: &Board, steps: usize) {
-        todo!();
+        for _ in 0..steps {
+            let (next_pos, obj) = self.next_step(&board);
+        }
+    }
+
+    fn next_step(&self, board: &Board) -> (Pos, Obj) {
+        let next_pos = self.pos.apply_delta(&self.direction);
+
+        if let Some(obj) = board.items.get(&next_pos) {
+            return (next_pos, *obj);
+        }
+
+        let warped_pos = match self.direction {
+            Delta(-1, 0) => Pos(self.pos.0, board.vranges[&self.pos.0].1),
+            Delta(1, 0) => Pos(self.pos.0, board.vranges[&self.pos.0].0),
+            Delta(0, -1) => Pos(board.hranges[&self.pos.1].1, self.pos.1),
+            Delta(0, 1) => Pos(board.hranges[&self.pos.1].0, self.pos.1),
+            _ => panic!("😢"),
+        };
+
+        let obj = *board.items.get(&warped_pos).unwrap();
+        (warped_pos, obj)
     }
 }
 
@@ -91,7 +112,7 @@ impl Board {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
 enum Obj {
     Open,
     Solid,
