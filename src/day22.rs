@@ -127,6 +127,7 @@ impl Santa {
             panic!("Untouched edge")
         };
 
+        println!("Warped pos: {:?}", warped_pos);
         let obj = *board.items.get(&warped_pos).unwrap();
         (warped_pos, obj, delta)
     }
@@ -140,11 +141,10 @@ impl Santa {
     }
 
     fn warp_26(&self, next_pos: Pos) -> (Pos, Delta) {
-        (Pos(next_pos.0 - 100, 199), Delta::up())
+        (Pos(199, next_pos.1 - 100), Delta::up())
     }
 
     fn warp_24(&self, next_pos: Pos) -> (Pos, Delta) {
-        println!("Wrap 24!");
         (Pos(100 + (49 - next_pos.0), 99), Delta::left())
     }
 
@@ -153,7 +153,6 @@ impl Santa {
     }
 
     fn warp_42(&self, next_pos: Pos) -> (Pos, Delta) {
-        println!("Wrap 42!");
         (Pos(49 - (next_pos.0 - 100), 149), Delta::left())
     }
 
@@ -170,7 +169,7 @@ impl Santa {
     }
 
     fn warp_62(&self, next_pos: Pos) -> (Pos, Delta) {
-        (Pos(0, next_pos.0 + 100), Delta::down())
+        (Pos(0, next_pos.1 + 100), Delta::down())
     }
 
     fn warp_64(&self, next_pos: Pos) -> (Pos, Delta) {
