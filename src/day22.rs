@@ -181,7 +181,7 @@ impl Santa {
     }
 
     fn warp_51(&self, next_pos: Pos) -> (Pos, Delta) {
-        (Pos(149 - next_pos.0, 49), Delta::right())
+        (Pos(149 - next_pos.0, 50), Delta::right())
     }
 
     fn warp_53(&self, next_pos: Pos) -> (Pos, Delta) {
