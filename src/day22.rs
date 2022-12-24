@@ -80,10 +80,10 @@ impl Santa {
     }
 
     // Ugh, hard-coded for my input shape
-    //   12
-    //   3
-    //  54
-    //  6
+    //  12
+    //  3
+    // 54
+    // 6
     fn cube_warp(&self, next_pos: Pos, board: &Board) -> (Pos, Obj, Delta) {
         let (warped_pos, delta) = if next_pos.0 < 0 {
             if next_pos.1 < 100 {
@@ -93,7 +93,7 @@ impl Santa {
             }
         } else if next_pos.1 >= 150 {
             self.warp_24(next_pos)
-        } else if next_pos.1 >= 100 {
+        } else if next_pos.1 >= 100 && self.direction == Delta::right() {
             if next_pos.0 >= 100 {
                 self.warp_42(next_pos)
             } else {
@@ -117,6 +117,8 @@ impl Santa {
             } else {
                 self.warp_15(next_pos)
             }
+        } else if next_pos.0 == 50 && self.direction == Delta::down() {
+            self.warp_23(next_pos)
         } else {
             panic!("Untouched edge")
         };
@@ -138,15 +140,21 @@ impl Santa {
     }
 
     fn warp_24(&self, next_pos: Pos) -> (Pos, Delta) {
-        todo!();
+        println!("Wrap 24!");
+        (Pos(100 + (49 - next_pos.0), 99), Delta::left())
+    }
+
+    fn warp_23(&self, next_pos: Pos) -> (Pos, Delta) {
+        (Pos(next_pos.1, 99), Delta::left())
     }
 
     fn warp_42(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Wrap 42!");
         (Pos(49 - (next_pos.0 - 100), 149), Delta::left())
     }
 
     fn warp_32(&self, next_pos: Pos) -> (Pos, Delta) {
-        todo!();
+        (Pos(49, next_pos.0), Delta::up())
     }
 
     fn warp_35(&self, next_pos: Pos) -> (Pos, Delta) {
