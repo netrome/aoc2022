@@ -32,7 +32,7 @@ struct Range {
     max: i64,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, Eq, PartialEq)]
 struct Pos(i64, i64);
 #[derive(Debug, Clone)]
 struct Delta(i64, i64);
@@ -44,6 +44,35 @@ enum Move {
 }
 #[derive(Debug, Clone)]
 struct Moves(Vec<Move>);
+
+impl FromStr for Board {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let items = s
+            .lines()
+            .enumerate()
+            .flat_map(|(row, line)| line.chars().enumerate().map(move |(col, c)| (row, col, c)))
+            .filter_map(|(row, col, c)| {
+                let pos = Pos(row as i64, col as i64);
+                match c {
+                    '.' => Some((pos, Obj::Open)),
+                    '#' => Some((pos, Obj::Solid)),
+                    _ => None,
+                }
+            })
+            .collect();
+
+        let hranges = HashMap::new();
+        let vranges = HashMap::new();
+
+        Ok(Self {
+            items,
+            hranges,
+            vranges,
+        })
+    }
+}
 
 impl FromStr for Moves {
     type Err = anyhow::Error;
