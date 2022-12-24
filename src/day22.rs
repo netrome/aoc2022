@@ -1,5 +1,6 @@
 pub fn p1(input: &str) -> String {
     let (board, moves) = parse_input(input);
+    let santa = Santa::new(board.start_pos());
     todo!();
 }
 
@@ -14,6 +15,32 @@ fn parse_input(input: &str) -> (Board, Moves) {
     let board: Board = board_input.parse().unwrap();
 
     (board, moves)
+}
+
+struct Santa {
+    pos: Pos,
+    direction: Delta,
+}
+
+impl Santa {
+    fn new(pos: Pos) -> Self {
+        Self {
+            pos,
+            direction: Delta::right(),
+        }
+    }
+
+    fn advance(&mut self, board: &Board, movement: &Movement) {
+        match movement {
+            Movement::TurnLeft => self.direction = self.direction.rotate_left(),
+            Movement::TurnRight => self.direction = self.direction.rotate_right(),
+            Movement::Forward(steps) => self.walk(&board, *steps),
+        }
+    }
+
+    fn walk(&mut self, board: &Board, steps: usize) {
+        todo!();
+    }
 }
 
 #[derive(Debug)]
@@ -82,35 +109,43 @@ impl Pos {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 struct Delta(i64, i64);
 
 impl Delta {
     const fn up() -> Self {
-        Self(0, -1)
-    }
-
-    const fn down() -> Self {
-        Self(0, 1)
-    }
-
-    const fn left() -> Self {
         Self(-1, 0)
     }
 
-    const fn right() -> Self {
+    const fn down() -> Self {
         Self(1, 0)
+    }
+
+    const fn left() -> Self {
+        Self(0, -1)
+    }
+
+    const fn right() -> Self {
+        Self(0, 1)
+    }
+
+    fn rotate_left(&self) -> Self {
+        Self(-self.1, self.0)
+    }
+
+    fn rotate_right(&self) -> Self {
+        Self(self.1, -self.0)
     }
 }
 
 #[derive(Debug, Clone)]
-enum Move {
+enum Movement {
     TurnLeft,
     TurnRight,
-    Forward(i64),
+    Forward(usize),
 }
 #[derive(Debug, Clone)]
-struct Moves(Vec<Move>);
+struct Moves(Vec<Movement>);
 
 impl FromStr for Board {
     type Err = anyhow::Error;
@@ -160,13 +195,13 @@ impl FromStr for Moves {
 
             if !number.is_empty() {
                 let numstr: String = number.into_iter().collect();
-                moves.push(Move::Forward(numstr.parse().expect("Numstr???")));
+                moves.push(Movement::Forward(numstr.parse().expect("Numstr???")));
                 number = Vec::new();
             }
 
             match c {
-                'L' => moves.push(Move::TurnLeft),
-                'R' => moves.push(Move::TurnRight),
+                'L' => moves.push(Movement::TurnLeft),
+                'R' => moves.push(Movement::TurnRight),
                 _ => panic!("Noooo!"),
             }
         }
@@ -180,3 +215,16 @@ use std::{collections::HashMap, str::FromStr};
 use crate::solution::Solution;
 inventory::submit!(Solution::new(22, 1, p1));
 inventory::submit!(Solution::new(22, 2, p2));
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn deltas_should_rotate_intuitively() {
+        assert_eq!(Delta::up().rotate_left(), Delta::left());
+        assert_eq!(Delta::up().rotate_right(), Delta::right());
+        assert_eq!(Delta::left().rotate_left(), Delta::down());
+        assert_eq!(Delta::left().rotate_right(), Delta::up());
+    }
+}
