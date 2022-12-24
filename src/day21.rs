@@ -1,9 +1,46 @@
 pub fn p1(input: &str) -> String {
-    todo!();
+    let world = parse_input(input);
+    world.monkey_yell("root").to_string()
 }
 
 pub fn p2(input: &str) -> String {
     todo!();
+}
+
+fn parse_input(input: &str) -> World {
+    let monkeys = input
+        .lines()
+        .map(|line| line.parse::<Monkey>().expect("Monkey bizniz failed"))
+        .map(|monkey| (monkey.id.clone(), monkey))
+        .collect();
+
+    World { monkeys }
+}
+
+struct World {
+    monkeys: HashMap<String, Monkey>,
+}
+
+impl World {
+    fn monkey_yell(&self, id: &str) -> i64 {
+        let monkey = self.monkeys.get(id).expect("No monkey!");
+
+        self.evaluate_expr(&monkey.expr)
+    }
+
+    fn evaluate_expr(&self, expr: &Expr) -> i64 {
+        match expr {
+            Expr::Const(val) => *val,
+            Expr::BinaryOp(left, op, right) => self.evaluate_op(left, *op, right),
+        }
+    }
+
+    fn evaluate_op(&self, left: &str, op: Operator, right: &str) -> i64 {
+        let left = self.monkey_yell(left);
+        let right = self.monkey_yell(right);
+
+        op.eval(left, right)
+    }
 }
 
 #[derive(Debug)]
@@ -18,12 +55,23 @@ enum Expr {
     BinaryOp(String, Operator, String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum Operator {
     Add,
     Sub,
     Mul,
     Div,
+}
+
+impl Operator {
+    fn eval(&self, left: i64, right: i64) -> i64 {
+        match self {
+            Self::Add => left + right,
+            Self::Sub => left - right,
+            Self::Mul => left * right,
+            Self::Div => left / right,
+        }
+    }
 }
 
 impl FromStr for Monkey {
@@ -69,6 +117,7 @@ impl TryFrom<char> for Operator {
     }
 }
 
+use std::collections::HashMap;
 use std::{convert::TryFrom, str::FromStr};
 
 use crate::solution::Solution;
