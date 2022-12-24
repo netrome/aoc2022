@@ -3,7 +3,7 @@ pub fn p1(input: &str) -> String {
     let mut santa = Santa::new(board.start_pos());
 
     for movement in moves.0 {
-        santa.advance(&board, &movement);
+        santa.advance(&board, &movement, false);
     }
 
     santa.password().to_string()
@@ -36,17 +36,17 @@ impl Santa {
         }
     }
 
-    fn advance(&mut self, board: &Board, movement: &Movement) {
+    fn advance(&mut self, board: &Board, movement: &Movement, cube_warp: bool) {
         match movement {
             Movement::TurnLeft => self.direction = self.direction.rotate_left(),
             Movement::TurnRight => self.direction = self.direction.rotate_right(),
-            Movement::Forward(steps) => self.walk(&board, *steps),
+            Movement::Forward(steps) => self.walk(&board, *steps, cube_warp),
         }
     }
 
-    fn walk(&mut self, board: &Board, steps: usize) {
+    fn walk(&mut self, board: &Board, steps: usize, cube_warp: bool) {
         for _ in 0..steps {
-            let (next_pos, obj) = self.next_step(&board);
+            let (next_pos, obj) = self.next_step(&board, cube_warp);
 
             match obj {
                 Obj::Open => self.pos = next_pos,
@@ -55,13 +55,26 @@ impl Santa {
         }
     }
 
-    fn next_step(&self, board: &Board) -> (Pos, Obj) {
+    fn next_step(&self, board: &Board, cube_warp: bool) -> (Pos, Obj) {
         let next_pos = self.pos.apply_delta(&self.direction);
 
         if let Some(obj) = board.items.get(&next_pos) {
             return (next_pos, *obj);
         }
 
+        if cube_warp {
+            self.cube_warp(next_pos, board)
+        } else {
+            self.warp_2d(next_pos, board)
+        }
+    }
+
+    // Ugh, hard-coded for my input shape
+    fn cube_warp(&self, next_pos: Pos, board: &Board) -> (Pos, Obj) {
+        todo!();
+    }
+
+    fn warp_2d(&self, next_pos: Pos, board: &Board) -> (Pos, Obj) {
         let warped_pos = match self.direction {
             Delta(-1, 0) => Pos(board.vranges[&self.pos.1].1, self.pos.1),
             Delta(1, 0) => Pos(board.vranges[&self.pos.1].0, self.pos.1),
