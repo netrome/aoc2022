@@ -10,7 +10,16 @@ pub fn p1(input: &str) -> String {
 }
 
 pub fn p2(input: &str) -> String {
-    todo!();
+    let (board, moves) = parse_input(input);
+    let mut santa = Santa::new(board.start_pos());
+
+    println!("Moves total: {}", moves.0.len());
+    for (idx, movement) in moves.0.into_iter().enumerate() {
+        println!("{}: Movement: {:?}, Santa: {:?}", idx, movement, santa);
+        santa.advance(&board, &movement, true);
+    }
+
+    santa.password().to_string()
 }
 
 fn parse_input(input: &str) -> (Board, Moves) {
@@ -46,7 +55,8 @@ impl Santa {
 
     fn walk(&mut self, board: &Board, steps: usize, cube_warp: bool) {
         for _ in 0..steps {
-            let (next_pos, obj) = self.next_step(&board, cube_warp);
+            let (next_pos, obj, delta) = self.next_step(&board, cube_warp);
+            self.direction = delta;
 
             match obj {
                 Obj::Open => self.pos = next_pos,
@@ -55,11 +65,11 @@ impl Santa {
         }
     }
 
-    fn next_step(&self, board: &Board, cube_warp: bool) -> (Pos, Obj) {
+    fn next_step(&self, board: &Board, cube_warp: bool) -> (Pos, Obj, Delta) {
         let next_pos = self.pos.apply_delta(&self.direction);
 
         if let Some(obj) = board.items.get(&next_pos) {
-            return (next_pos, *obj);
+            return (next_pos, *obj, self.direction.clone());
         }
 
         if cube_warp {
@@ -70,11 +80,100 @@ impl Santa {
     }
 
     // Ugh, hard-coded for my input shape
-    fn cube_warp(&self, next_pos: Pos, board: &Board) -> (Pos, Obj) {
+    //   12
+    //   3
+    //  54
+    //  6
+    fn cube_warp(&self, next_pos: Pos, board: &Board) -> (Pos, Obj, Delta) {
+        let (warped_pos, delta) = if next_pos.0 < 0 {
+            if next_pos.1 < 100 {
+                self.warp_16(next_pos)
+            } else {
+                self.warp_26(next_pos)
+            }
+        } else if next_pos.1 >= 150 {
+            self.warp_24(next_pos)
+        } else if next_pos.1 >= 100 {
+            if next_pos.0 >= 100 {
+                self.warp_42(next_pos)
+            } else {
+                self.warp_32(next_pos)
+            }
+        } else if next_pos.0 >= 200 {
+            self.warp_62(next_pos)
+        } else if next_pos.1 < 0 {
+            if next_pos.0 >= 150 {
+                self.warp_61(next_pos)
+            } else {
+                self.warp_51(next_pos)
+            }
+        } else if next_pos.0 >= 150 && self.direction == Delta::right() {
+            self.warp_64(next_pos)
+        } else if next_pos.0 == 99 && self.direction == Delta::up() {
+            self.warp_53(next_pos)
+        } else if next_pos.1 < 50 && self.direction == Delta::left() {
+            if next_pos.0 >= 50 {
+                self.warp_35(next_pos)
+            } else {
+                self.warp_15(next_pos)
+            }
+        } else {
+            panic!("Untouched edge")
+        };
+
+        let obj = *board.items.get(&warped_pos).unwrap();
+        (warped_pos, obj, delta)
+    }
+
+    fn warp_16(&self, next_pos: Pos) -> (Pos, Delta) {
         todo!();
     }
 
-    fn warp_2d(&self, next_pos: Pos, board: &Board) -> (Pos, Obj) {
+    fn warp_15(&self, next_pos: Pos) -> (Pos, Delta) {
+        (Pos(149 - next_pos.0, 0), Delta::right())
+    }
+
+    fn warp_26(&self, next_pos: Pos) -> (Pos, Delta) {
+        todo!();
+    }
+
+    fn warp_24(&self, next_pos: Pos) -> (Pos, Delta) {
+        todo!();
+    }
+
+    fn warp_42(&self, next_pos: Pos) -> (Pos, Delta) {
+        (Pos(49 - (next_pos.0 - 100), 149), Delta::left())
+    }
+
+    fn warp_32(&self, next_pos: Pos) -> (Pos, Delta) {
+        todo!();
+    }
+
+    fn warp_35(&self, next_pos: Pos) -> (Pos, Delta) {
+        (Pos(100, next_pos.0 - 50), Delta::down())
+    }
+
+    fn warp_62(&self, next_pos: Pos) -> (Pos, Delta) {
+        todo!();
+    }
+
+    fn warp_64(&self, next_pos: Pos) -> (Pos, Delta) {
+        (Pos(149, next_pos.0 - 100), Delta::up())
+    }
+
+    fn warp_61(&self, next_pos: Pos) -> (Pos, Delta) {
+        todo!();
+    }
+
+    fn warp_51(&self, next_pos: Pos) -> (Pos, Delta) {
+        todo!();
+    }
+
+    fn warp_53(&self, next_pos: Pos) -> (Pos, Delta) {
+        todo!();
+    }
+
+    fn warp_2d(&self, next_pos: Pos, board: &Board) -> (Pos, Obj, Delta) {
         let warped_pos = match self.direction {
             Delta(-1, 0) => Pos(board.vranges[&self.pos.1].1, self.pos.1),
             Delta(1, 0) => Pos(board.vranges[&self.pos.1].0, self.pos.1),
@@ -84,7 +183,7 @@ impl Santa {
         };
 
         let obj = *board.items.get(&warped_pos).unwrap();
-        (warped_pos, obj)
+        (warped_pos, obj, self.direction.clone())
     }
 
     fn password(&self) -> i64 {
