@@ -2,13 +2,11 @@ pub fn p1(input: &str) -> String {
     let (board, moves) = parse_input(input);
     let mut santa = Santa::new(board.start_pos());
 
-    println!("Initial Santa: {:?}", santa);
     for movement in moves.0 {
         santa.advance(&board, &movement);
-        println!("Santa: {:?}", santa);
     }
 
-    "hej".into()
+    santa.password().to_string()
 }
 
 pub fn p2(input: &str) -> String {
@@ -59,10 +57,8 @@ impl Santa {
 
     fn next_step(&self, board: &Board) -> (Pos, Obj) {
         let next_pos = self.pos.apply_delta(&self.direction);
-        println!("Next pos: {:?}", next_pos);
 
         if let Some(obj) = board.items.get(&next_pos) {
-            println!("Happy walk");
             return (next_pos, *obj);
         }
 
@@ -74,10 +70,20 @@ impl Santa {
             _ => panic!("😢"),
         };
 
-        println!("Warped pos: {:?}", warped_pos);
-
         let obj = *board.items.get(&warped_pos).unwrap();
         (warped_pos, obj)
+    }
+
+    fn password(&self) -> i64 {
+        let facing_val = match self.direction {
+            Delta(0, 1) => 0,
+            Delta(1, 0) => 1,
+            Delta(0, -1) => 2,
+            Delta(-1, 0) => 3,
+            _ => panic!("Not supported"),
+        };
+
+        (self.pos.0 + 1) * 1000 + (self.pos.1 + 1) * 4 + facing_val
     }
 }
 
@@ -244,6 +250,12 @@ impl FromStr for Moves {
             }
         }
 
+        if !number.is_empty() {
+            let numstr: String = number.into_iter().collect();
+            moves.push(Movement::Forward(numstr.parse().expect("Numstr???")));
+            number = Vec::new();
+        }
+
         Ok(Self(moves))
     }
 }
@@ -263,6 +275,15 @@ mod tests {
         assert_eq!(Delta::up().rotate_left(), Delta::left());
         assert_eq!(Delta::up().rotate_right(), Delta::right());
         assert_eq!(Delta::left().rotate_left(), Delta::down());
-        assert_eq!(Delta::left().rotate_right(), Delta::up());
+        assert_eq!(Delta::left().rotate_right().rotate_right(), Delta::right());
+        assert_eq!(Delta::left().rotate_left().rotate_left(), Delta::right());
+        assert_eq!(
+            Delta::left()
+                .rotate_right()
+                .rotate_right()
+                .rotate_right()
+                .rotate_right(),
+            Delta::left()
+        );
     }
 }
