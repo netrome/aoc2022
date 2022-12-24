@@ -470,9 +470,25 @@ mod tests {
     }
 
     #[test]
-    fn test_symmetric_warp_origin_up() {
+    fn test_symmetric_warp_start_up() {
         let start_pos = Pos(0, 50);
         let direction = Delta::up();
+
+        test_symmetric_wrap(start_pos, direction);
+    }
+
+    #[test]
+    fn test_symmetric_warp_26() {
+        let start_pos = Pos(1, 122);
+        let direction = Delta::up();
+
+        test_symmetric_wrap(start_pos, direction);
+    }
+
+    #[test]
+    fn test_symmetric_warp_46() {
+        let start_pos = Pos(158, 49);
+        let direction = Delta::right();
 
         test_symmetric_wrap(start_pos, direction);
     }
