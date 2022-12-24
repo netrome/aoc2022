@@ -41,6 +41,11 @@ impl Santa {
     fn walk(&mut self, board: &Board, steps: usize) {
         for _ in 0..steps {
             let (next_pos, obj) = self.next_step(&board);
+
+            match obj {
+                Obj::Open => self.pos = next_pos,
+                Obj::Solid => return,
+            }
         }
     }
 
