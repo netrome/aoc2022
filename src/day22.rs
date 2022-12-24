@@ -163,7 +163,7 @@ impl Santa {
 
     fn warp_46(&self, next_pos: Pos) -> (Pos, Delta) {
         println!("Warp 46");
-        (Pos(next_pos.1 + 100, 49), Delta::up())
+        (Pos(next_pos.1 + 100, 49), Delta::left())
     }
 
     fn warp_32(&self, next_pos: Pos) -> (Pos, Delta) {
