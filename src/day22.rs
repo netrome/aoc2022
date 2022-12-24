@@ -1,6 +1,5 @@
 pub fn p1(input: &str) -> String {
     let (board, moves) = parse_input(input);
-    println!("Board: {:?}", board);
     todo!();
 }
 
@@ -9,7 +8,7 @@ pub fn p2(input: &str) -> String {
 }
 
 fn parse_input(input: &str) -> (Board, Moves) {
-    let (board_input, move_input) = input.trim().split_once("\n\n").unwrap();
+    let (board_input, move_input) = input.split_once("\n\n").unwrap();
 
     let moves: Moves = move_input.parse().unwrap();
     let board: Board = board_input.parse().unwrap();
@@ -25,6 +24,13 @@ struct Board {
 }
 
 impl Board {
+    fn start_pos(&self) -> Pos {
+        let mut all_positions: Vec<Pos> = self.items.keys().map(|pos| pos.clone()).collect();
+        all_positions.sort();
+
+        all_positions.into_iter().next().unwrap()
+    }
+
     fn populate_ranges(&mut self) {
         for pos in self.items.keys() {
             let top_edge = self.find_edge(pos.clone(), &Delta::up());
@@ -67,7 +73,7 @@ enum Obj {
 #[derive(Debug)]
 struct Range(i64, i64);
 
-#[derive(Debug, Clone, Hash, Eq, PartialEq)]
+#[derive(Debug, Clone, Hash, Eq, PartialEq, Ord, PartialOrd)]
 struct Pos(i64, i64);
 
 impl Pos {
