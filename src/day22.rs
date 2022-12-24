@@ -13,9 +13,8 @@ pub fn p2(input: &str) -> String {
     let (board, moves) = parse_input(input);
     let mut santa = Santa::new(board.start_pos());
 
-    println!("Moves total: {}", moves.0.len());
     for (idx, movement) in moves.0.into_iter().enumerate() {
-        println!("{}: Movement: {:?}, Santa: {:?}", idx, movement, santa);
+        println!("  {}: Movement: {:?}, Santa: {:?}", idx, movement, santa);
         santa.advance(&board, &movement, true);
     }
 
@@ -133,58 +132,72 @@ impl Santa {
     }
 
     fn warp_16(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 16");
         (Pos(next_pos.1 + 100, 0), Delta::right())
     }
 
     fn warp_15(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 15");
         (Pos(149 - next_pos.0, 0), Delta::right())
     }
 
     fn warp_26(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 26");
         (Pos(199, next_pos.1 - 100), Delta::up())
     }
 
     fn warp_24(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 24");
         (Pos(100 + (49 - next_pos.0), 99), Delta::left())
     }
 
     fn warp_23(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 23");
         (Pos(next_pos.1, 99), Delta::left())
     }
 
     fn warp_42(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 42");
         (Pos(49 - (next_pos.0 - 100), 149), Delta::left())
     }
 
     fn warp_46(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 46");
         (Pos(next_pos.1 + 100, 49), Delta::up())
     }
 
     fn warp_32(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 32");
         (Pos(49, next_pos.0), Delta::up())
     }
 
     fn warp_35(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 35");
         (Pos(100, next_pos.0 - 50), Delta::down())
     }
 
     fn warp_62(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 62");
         (Pos(0, next_pos.1 + 100), Delta::down())
     }
 
     fn warp_64(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 64");
         (Pos(149, next_pos.0 - 100), Delta::up())
     }
 
     fn warp_61(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 61");
         (Pos(0, next_pos.0 - 100), Delta::down())
     }
 
     fn warp_51(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 51");
         (Pos(149 - next_pos.0, 50), Delta::right())
     }
 
     fn warp_53(&self, next_pos: Pos) -> (Pos, Delta) {
+        println!("Warp 53");
         (Pos(next_pos.1 + 50, 50), Delta::right())
     }
 
