@@ -430,13 +430,57 @@ mod tests {
     }
 
     #[test]
-    fn test_symmetric_warp() {
+    fn test_symmetric_warp_23() {
+        let start_pos = Pos(49, 106);
+        let direction = Delta::down();
+
+        test_symmetric_wrap(start_pos, direction);
+    }
+
+    #[test]
+    fn test_symmetric_warp_42() {
+        let start_pos = Pos(125, 99);
+        let direction = Delta::right();
+
+        test_symmetric_wrap(start_pos, direction);
+    }
+
+    #[test]
+    fn test_symmetric_warp_53() {
+        let start_pos = Pos(101, 37);
+        let direction = Delta::up();
+
+        test_symmetric_wrap(start_pos, direction);
+    }
+
+    #[test]
+    fn test_symmetric_warp_51() {
+        let start_pos = Pos(114, 1);
+        let direction = Delta::left();
+
+        test_symmetric_wrap(start_pos, direction);
+    }
+
+    #[test]
+    fn test_symmetric_warp_23_corner() {
+        let start_pos = Pos(49, 100);
+        let direction = Delta::down();
+
+        test_symmetric_wrap(start_pos, direction);
+    }
+
+    #[test]
+    fn test_symmetric_warp_origin_up() {
+        let start_pos = Pos(0, 50);
+        let direction = Delta::up();
+
+        test_symmetric_wrap(start_pos, direction);
+    }
+
+    fn test_symmetric_wrap(start_pos: Pos, direction: Delta) {
         let input = std::fs::read_to_string("./input/d22.txt").unwrap();
 
         let (board, _moves) = parse_input(&input);
-
-        let start_pos = Pos(49, 106);
-        let direction = Delta::down();
 
         let sequence = [
             Movement::Forward(3),
