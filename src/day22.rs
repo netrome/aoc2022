@@ -1,5 +1,6 @@
 pub fn p1(input: &str) -> String {
     let (board, moves) = parse_input(input);
+    println!("Board: {:?}", board);
     todo!();
 }
 
@@ -11,31 +12,91 @@ fn parse_input(input: &str) -> (Board, Moves) {
     let (board_input, move_input) = input.trim().split_once("\n\n").unwrap();
 
     let moves: Moves = move_input.parse().unwrap();
-    println!("{:?}", moves);
+    let board: Board = board_input.parse().unwrap();
 
-    todo!();
+    (board, moves)
 }
 
+#[derive(Debug)]
 struct Board {
     items: HashMap<Pos, Obj>,
     hranges: HashMap<i64, Range>,
     vranges: HashMap<i64, Range>,
 }
 
+impl Board {
+    fn populate_ranges(&mut self) {
+        for pos in self.items.keys() {
+            let top_edge = self.find_edge(pos.clone(), &Delta::up());
+            let bottom_edge = self.find_edge(pos.clone(), &Delta::down());
+
+            let left_edge = self.find_edge(pos.clone(), &Delta::left());
+            let right_edge = self.find_edge(pos.clone(), &Delta::right());
+
+            let vrange = Range(top_edge.0, bottom_edge.0);
+            let hrange = Range(left_edge.1, right_edge.1);
+
+            self.vranges.insert(pos.0, vrange);
+            self.hranges.insert(pos.1, hrange);
+        }
+    }
+
+    fn find_edge(&self, mut pos: Pos, direction: &Delta) -> Pos {
+        if !self.items.contains_key(&pos) {
+            panic!("Oh noooo!")
+        }
+
+        loop {
+            let next = pos.apply_delta(direction);
+
+            if !self.items.contains_key(&next) {
+                return pos;
+            } else {
+                pos = next
+            }
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq)]
 enum Obj {
     Open,
     Solid,
 }
 
-struct Range {
-    min: i64,
-    max: i64,
-}
+#[derive(Debug)]
+struct Range(i64, i64);
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
 struct Pos(i64, i64);
+
+impl Pos {
+    fn apply_delta(&self, delta: &Delta) -> Self {
+        Self(self.0 + delta.0, self.1 + delta.1)
+    }
+}
+
 #[derive(Debug, Clone)]
 struct Delta(i64, i64);
+
+impl Delta {
+    const fn up() -> Self {
+        Self(0, -1)
+    }
+
+    const fn down() -> Self {
+        Self(0, 1)
+    }
+
+    const fn left() -> Self {
+        Self(-1, 0)
+    }
+
+    const fn right() -> Self {
+        Self(1, 0)
+    }
+}
+
 #[derive(Debug, Clone)]
 enum Move {
     TurnLeft,
@@ -66,11 +127,15 @@ impl FromStr for Board {
         let hranges = HashMap::new();
         let vranges = HashMap::new();
 
-        Ok(Self {
+        let mut board = Self {
             items,
             hranges,
             vranges,
-        })
+        };
+
+        board.populate_ranges();
+
+        Ok(board)
     }
 }
 
