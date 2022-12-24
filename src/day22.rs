@@ -408,6 +408,8 @@ inventory::submit!(Solution::new(22, 2, p2));
 
 #[cfg(test)]
 mod tests {
+    use itertools::assert_equal;
+
     use super::*;
 
     #[test]
@@ -425,5 +427,31 @@ mod tests {
                 .rotate_right(),
             Delta::left()
         );
+    }
+
+    #[test]
+    fn test_symmetric_warp() {
+        let input = std::fs::read_to_string("./input/d22.txt").unwrap();
+
+        let (board, _moves) = parse_input(&input);
+
+        let start_pos = Pos(49, 106);
+        let direction = Delta::down();
+
+        let sequence = [
+            Movement::Forward(3),
+            Movement::TurnLeft,
+            Movement::TurnLeft,
+            Movement::Forward(3),
+        ];
+
+        let mut santa = Santa::new(start_pos.clone());
+        santa.direction = direction;
+
+        for movement in sequence {
+            santa.advance(&board, &movement, true);
+        }
+
+        assert_eq!(santa.pos, start_pos);
     }
 }
