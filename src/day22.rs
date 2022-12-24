@@ -153,7 +153,7 @@ impl Santa {
 
     fn warp_23(&self, next_pos: Pos) -> (Pos, Delta) {
         println!("Warp 23");
-        (Pos(next_pos.1, 99), Delta::left())
+        (Pos(next_pos.1 - 50, 99), Delta::left())
     }
 
     fn warp_42(&self, next_pos: Pos) -> (Pos, Delta) {
@@ -168,7 +168,7 @@ impl Santa {
 
     fn warp_32(&self, next_pos: Pos) -> (Pos, Delta) {
         println!("Warp 32");
-        (Pos(49, next_pos.0), Delta::up())
+        (Pos(49, next_pos.0 + 50), Delta::up())
     }
 
     fn warp_35(&self, next_pos: Pos) -> (Pos, Delta) {
@@ -449,6 +449,7 @@ mod tests {
         santa.direction = direction;
 
         for movement in sequence {
+            println!("Pos: {:?}", santa.pos);
             santa.advance(&board, &movement, true);
         }
 
