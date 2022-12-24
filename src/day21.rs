@@ -1,9 +1,11 @@
 pub fn p1(input: &str) -> String {
     let world = parse_input(input);
-    world.monkey_yell("root").to_string()
+    world.monkey_yell("root").unwrap().to_string()
 }
 
 pub fn p2(input: &str) -> String {
+    let world = parse_input(input);
+
     todo!();
 }
 
@@ -22,25 +24,31 @@ struct World {
 }
 
 impl World {
-    fn monkey_yell(&self, id: &str) -> i64 {
+    fn monkey_yell(&self, id: &str) -> Option<i64> {
         let monkey = self.monkeys.get(id).expect("No monkey!");
 
         self.evaluate_expr(&monkey.expr)
     }
 
-    fn evaluate_expr(&self, expr: &Expr) -> i64 {
+    fn evaluate_expr(&self, expr: &Expr) -> Option<i64> {
         match expr {
-            Expr::Const(val) => *val,
+            Expr::Const(val) => Some(*val),
             Expr::BinaryOp(left, op, right) => self.evaluate_op(left, *op, right),
+            Expr::Unknown => None,
+            Expr::Eq(_, _) => panic!("Not supported"),
         }
     }
 
-    fn evaluate_op(&self, left: &str, op: Operator, right: &str) -> i64 {
-        let left = self.monkey_yell(left);
-        let right = self.monkey_yell(right);
+    fn evaluate_op(&self, left: &str, op: Operator, right: &str) -> Option<i64> {
+        let left = self.monkey_yell(left)?;
+        let right = self.monkey_yell(right)?;
 
-        op.eval(left, right)
+        Some(op.eval(left, right))
     }
+}
+
+struct World2 {
+    monkeys: HashMap<String, Monkey>,
 }
 
 #[derive(Debug)]
@@ -51,8 +59,10 @@ struct Monkey {
 
 #[derive(Debug)]
 enum Expr {
+    Unknown,
     Const(i64),
     BinaryOp(String, Operator, String),
+    Eq(String, String),
 }
 
 #[derive(Debug, Clone, Copy)]
