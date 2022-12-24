@@ -1,7 +1,14 @@
 pub fn p1(input: &str) -> String {
     let (board, moves) = parse_input(input);
-    let santa = Santa::new(board.start_pos());
-    todo!();
+    let mut santa = Santa::new(board.start_pos());
+
+    println!("Initial Santa: {:?}", santa);
+    for movement in moves.0 {
+        santa.advance(&board, &movement);
+        println!("Santa: {:?}", santa);
+    }
+
+    "hej".into()
 }
 
 pub fn p2(input: &str) -> String {
@@ -17,6 +24,7 @@ fn parse_input(input: &str) -> (Board, Moves) {
     (board, moves)
 }
 
+#[derive(Debug)]
 struct Santa {
     pos: Pos,
     direction: Delta,
@@ -51,18 +59,22 @@ impl Santa {
 
     fn next_step(&self, board: &Board) -> (Pos, Obj) {
         let next_pos = self.pos.apply_delta(&self.direction);
+        println!("Next pos: {:?}", next_pos);
 
         if let Some(obj) = board.items.get(&next_pos) {
+            println!("Happy walk");
             return (next_pos, *obj);
         }
 
         let warped_pos = match self.direction {
-            Delta(-1, 0) => Pos(self.pos.0, board.vranges[&self.pos.0].1),
-            Delta(1, 0) => Pos(self.pos.0, board.vranges[&self.pos.0].0),
-            Delta(0, -1) => Pos(board.hranges[&self.pos.1].1, self.pos.1),
-            Delta(0, 1) => Pos(board.hranges[&self.pos.1].0, self.pos.1),
+            Delta(-1, 0) => Pos(board.vranges[&self.pos.1].1, self.pos.1),
+            Delta(1, 0) => Pos(board.vranges[&self.pos.1].0, self.pos.1),
+            Delta(0, -1) => Pos(self.pos.0, board.hranges[&self.pos.0].1),
+            Delta(0, 1) => Pos(self.pos.0, board.hranges[&self.pos.0].0),
             _ => panic!("😢"),
         };
+
+        println!("Warped pos: {:?}", warped_pos);
 
         let obj = *board.items.get(&warped_pos).unwrap();
         (warped_pos, obj)
@@ -92,11 +104,11 @@ impl Board {
             let left_edge = self.find_edge(pos.clone(), &Delta::left());
             let right_edge = self.find_edge(pos.clone(), &Delta::right());
 
-            let vrange = Range(top_edge.0, bottom_edge.0);
             let hrange = Range(left_edge.1, right_edge.1);
+            let vrange = Range(top_edge.0, bottom_edge.0);
 
-            self.vranges.insert(pos.0, vrange);
-            self.hranges.insert(pos.1, hrange);
+            self.hranges.insert(pos.0, hrange);
+            self.vranges.insert(pos.1, vrange);
         }
     }
 
