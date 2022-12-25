@@ -493,6 +493,30 @@ mod tests {
         test_symmetric_wrap(start_pos, direction);
     }
 
+    #[test]
+    fn test_corner_123() {
+        let start_pos = Pos(48, 101);
+        let direction = Delta::left();
+
+        test_corner(start_pos, direction, 3);
+    }
+
+    #[test]
+    fn test_corner_234() {
+        let start_pos = Pos(46, 146);
+        let direction = Delta::down();
+
+        test_corner(start_pos, direction, 7);
+    }
+
+    #[test]
+    fn test_corner_624() {
+        let start_pos = Pos(199, 49);
+        let direction = Delta::down();
+
+        test_corner(start_pos, direction, 1);
+    }
+
     fn test_symmetric_wrap(start_pos: Pos, direction: Delta) {
         let input = std::fs::read_to_string("./input/d22.txt").unwrap();
 
@@ -503,6 +527,38 @@ mod tests {
             Movement::TurnLeft,
             Movement::TurnLeft,
             Movement::Forward(3),
+        ];
+
+        let mut santa = Santa::new(start_pos.clone());
+        santa.direction = direction;
+
+        for movement in sequence {
+            println!("Pos: {:?}", santa.pos);
+            santa.advance(&board, &movement, true);
+        }
+
+        assert_eq!(santa.pos, start_pos);
+    }
+
+    fn test_corner(start_pos: Pos, direction: Delta, line_length: usize) {
+        let input = std::fs::read_to_string("./input/d22.txt").unwrap();
+
+        let (board, _moves) = parse_input(&input);
+
+        let sequence = [
+            Movement::Forward(line_length),
+            Movement::TurnLeft,
+            Movement::Forward(line_length),
+            Movement::TurnLeft,
+            Movement::Forward(line_length),
+            Movement::TurnLeft,
+            // Go the other direction as well
+            Movement::TurnLeft,
+            Movement::Forward(line_length),
+            Movement::TurnRight,
+            Movement::Forward(line_length),
+            Movement::TurnRight,
+            Movement::Forward(line_length),
         ];
 
         let mut santa = Santa::new(start_pos.clone());
