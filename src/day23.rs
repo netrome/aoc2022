@@ -1,7 +1,10 @@
 pub fn p1(input: &str) -> String {
     let mut world: World = input.parse().unwrap();
+    //println!("{}", world.visualize());
+
     for i in 0..10 {
-        world.simulate_round(i);
+        world = world.simulate_round(i);
+        //println!("{}", world.visualize());
     }
 
     world.empty_ground_tiles_in_smallest_rect().to_string()
@@ -48,6 +51,15 @@ impl World {
         let mut proposed_next_steps = HashMap::new();
 
         for elf_pos in self.elf_positions.iter() {
+            if Movement::all()
+                .into_iter()
+                .all(|movement| !self.elf_positions.contains(&elf_pos.add(movement)))
+            {
+                proposed_next_steps.insert(elf_pos.clone(), elf_pos.clone());
+                proposed_next_step_counts.insert(elf_pos.clone(), 1);
+                continue;
+            }
+
             for proposal in Proposal::proposals(round) {
                 if !proposal
                     .check
@@ -58,6 +70,9 @@ impl World {
                     *proposed_next_step_counts.entry(pos.clone()).or_insert(0) += 1;
                     proposed_next_steps.insert(elf_pos.clone(), pos);
                     break;
+                } else {
+                    proposed_next_steps.insert(elf_pos.clone(), elf_pos.clone());
+                    proposed_next_step_counts.insert(elf_pos.clone(), 1);
                 }
             }
         }
@@ -69,8 +84,8 @@ impl World {
         let (top_left, bottom_right) = self.smallest_rectangle();
 
         let mut count = 0;
-        for x in top_left.0..bottom_right.0 {
-            for y in top_left.1..bottom_right.1 {
+        for x in top_left.0..=bottom_right.0 {
+            for y in top_left.1..=bottom_right.1 {
                 if !self.elf_positions.contains(&Pos(x, y)) {
                     count += 1
                 }
@@ -93,6 +108,26 @@ impl World {
         }
 
         (top_left, bottom_right)
+    }
+
+    fn visualize(&self) -> String {
+        let (top_left, bottom_right) = self.smallest_rectangle();
+
+        let mut res = Vec::new();
+
+        for row in top_left.0..=bottom_right.0 {
+            for col in top_left.0..=bottom_right.0 {
+                if self.elf_positions.contains(&Pos(row, col)) {
+                    res.push('#');
+                } else {
+                    res.push('.');
+                }
+            }
+
+            res.push('\n');
+        }
+
+        res.into_iter().collect()
     }
 }
 
@@ -130,6 +165,19 @@ impl Movement {
             Self::W => (0, -1),
             Self::E => (0, 1),
         }
+    }
+
+    const fn all() -> [Self; 8] {
+        [
+            Self::N,
+            Self::NW,
+            Self::NE,
+            Self::S,
+            Self::SW,
+            Self::SE,
+            Self::W,
+            Self::E,
+        ]
     }
 }
 
