@@ -2,13 +2,10 @@ pub fn p1(input: &str) -> String {
     let mut world: World = input.parse().unwrap();
 
     while !world.santa_has_reached_goal() {
-        println!("Santa pos: {:?}", world.santa_possible_points);
         world.next_minute();
-
-        println!("{}", world.visualize());
     }
 
-    (world.minute).to_string()
+    (world.minute + 1).to_string()
 }
 
 pub fn p2(input: &str) -> String {
@@ -98,7 +95,7 @@ struct Blizzard {
 }
 
 impl Blizzard {
-    fn advance(&mut self, max_y: i64, max_x: i64) {
+    fn advance(&mut self, max_x: i64, max_y: i64) {
         let mut next_pos = self.pos.advance(self.direction);
 
         if next_pos.0 >= max_x {
