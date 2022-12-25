@@ -1,7 +1,10 @@
 pub fn p1(input: &str) -> String {
     let mut world: World = input.parse().unwrap();
-    println!("World {:?}", world);
-    todo!();
+    for i in 0..10 {
+        world.simulate_round(i);
+    }
+
+    world.empty_ground_tiles_in_smallest_rect().to_string()
 }
 
 pub fn p2(input: &str) -> String {
@@ -60,6 +63,36 @@ impl World {
         }
 
         (proposed_next_step_counts, proposed_next_steps)
+    }
+
+    fn empty_ground_tiles_in_smallest_rect(&self) -> usize {
+        let (top_left, bottom_right) = self.smallest_rectangle();
+
+        let mut count = 0;
+        for x in top_left.0..bottom_right.0 {
+            for y in top_left.1..bottom_right.1 {
+                if !self.elf_positions.contains(&Pos(x, y)) {
+                    count += 1
+                }
+            }
+        }
+
+        count
+    }
+
+    fn smallest_rectangle(&self) -> (Pos, Pos) {
+        let mut top_left = Pos(i64::MAX, i64::MAX);
+        let mut bottom_right = Pos(i64::MIN, i64::MIN);
+
+        for pos in self.elf_positions.iter() {
+            top_left.0 = top_left.0.min(pos.0);
+            top_left.1 = top_left.1.min(pos.1);
+
+            bottom_right.0 = bottom_right.0.max(pos.0);
+            bottom_right.1 = bottom_right.1.max(pos.1);
+        }
+
+        (top_left, bottom_right)
     }
 }
 
