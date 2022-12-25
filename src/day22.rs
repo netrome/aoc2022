@@ -47,13 +47,13 @@ impl Santa {
         match movement {
             Movement::TurnLeft => self.direction = self.direction.rotate_left(),
             Movement::TurnRight => self.direction = self.direction.rotate_right(),
-            Movement::Forward(steps) => self.walk(&board, *steps, cube_warp),
+            Movement::Forward(steps) => self.walk(board, *steps, cube_warp),
         }
     }
 
     fn walk(&mut self, board: &Board, steps: usize, cube_warp: bool) {
         for _ in 0..steps {
-            let (next_pos, obj, delta) = self.next_step(&board, cube_warp);
+            let (next_pos, obj, delta) = self.next_step(board, cube_warp);
 
             match obj {
                 Obj::Open => {
@@ -222,7 +222,7 @@ struct Board {
 
 impl Board {
     fn start_pos(&self) -> Pos {
-        let mut all_positions: Vec<Pos> = self.items.keys().map(|pos| pos.clone()).collect();
+        let mut all_positions: Vec<Pos> = self.items.keys().cloned().collect();
         all_positions.sort();
 
         all_positions.into_iter().next().unwrap()
@@ -393,7 +393,7 @@ inventory::submit!(Solution::new(22, 2, p2));
 
 #[cfg(test)]
 mod tests {
-    use itertools::assert_equal;
+    
 
     use super::*;
 

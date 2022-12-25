@@ -63,8 +63,8 @@ impl World2 {
             _ => panic!("Not supported"),
         };
 
-        let left_eval = self.monkey_yell(&left);
-        let right_eval = self.monkey_yell(&right);
+        let left_eval = self.monkey_yell(left);
+        let right_eval = self.monkey_yell(right);
 
         let (next_id, should_be_equal_to) = match (left_eval, right_eval) {
             (Some(val), None) => (right, val),
@@ -86,8 +86,8 @@ impl World2 {
     }
 
     fn next_eq(&self, left: &str, op: Operator, right: &str, should_be_equal_to: i64) -> i64 {
-        let left_eval = self.monkey_yell(&left);
-        let right_eval = self.monkey_yell(&right);
+        let left_eval = self.monkey_yell(left);
+        let right_eval = self.monkey_yell(right);
 
         let next_eq = op.solve(left_eval, right_eval, should_be_equal_to);
 
