@@ -2,7 +2,10 @@ pub fn p1(input: &str) -> String {
     let mut world: World = input.parse().unwrap();
 
     while !world.santa_has_reached_goal() {
+        println!("Santa pos: {:?}", world.santa_possible_points);
         world.next_minute();
+
+        println!("{}", world.visualize());
     }
 
     (world.minute).to_string()
@@ -45,6 +48,46 @@ impl World {
 
     fn santa_has_reached_goal(&self) -> bool {
         self.santa_possible_points.contains(&self.goal)
+    }
+
+    #[allow(unused)]
+    fn visualize(&self) -> String {
+        let mut grid: HashMap<Pos, (Vec<Blizzard>, bool)> = HashMap::new();
+
+        for point in self.santa_possible_points.iter() {
+            grid.entry(point.clone())
+                .or_insert_with(|| (Vec::new(), false))
+                .1 = true;
+        }
+
+        for blizzard in self.blizzards.iter() {
+            grid.entry(blizzard.pos.clone())
+                .or_insert_with(|| (Vec::new(), false))
+                .0
+                .push(blizzard.clone());
+        }
+
+        let mut screen = Vec::new();
+        for x in 0..self.max_x {
+            for y in 0..self.max_y {
+                let c = if let Some((blizzards, has_possible_santa)) = grid.get(&Pos(x, y)) {
+                    match (blizzards.as_slice(), has_possible_santa) {
+                        ([b], false) => b.direction.into(),
+                        (v, false) => v.len().to_string().chars().next().unwrap(),
+                        ([], true) => 'E',
+                        (_, true) => '@',
+                        _ => '?',
+                    }
+                } else {
+                    '.'
+                };
+
+                screen.push(c);
+            }
+            screen.push('\n')
+        }
+
+        screen.into_iter().collect()
     }
 }
 
@@ -114,6 +157,17 @@ enum Direction {
     Right,
     Up,
     Down,
+}
+
+impl From<Direction> for char {
+    fn from(dir: Direction) -> Self {
+        match dir {
+            Direction::Left => '<',
+            Direction::Right => '>',
+            Direction::Up => '^',
+            Direction::Down => 'v',
+        }
+    }
 }
 
 impl FromStr for World {
