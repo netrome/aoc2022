@@ -1,12 +1,18 @@
 pub fn p1(input: &str) -> String {
-    todo!();
+    let mut world: World = input.parse().unwrap();
+
+    while !world.santa_has_reached_goal() {
+        world.next_minute();
+    }
+
+    (world.minute).to_string()
 }
 
 pub fn p2(input: &str) -> String {
     todo!();
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct World {
     minute: usize,
     santa_possible_points: HashSet<Pos>,
@@ -16,7 +22,33 @@ struct World {
     max_y: i64,
 }
 
-#[derive(Debug)]
+impl World {
+    fn next_minute(&mut self) {
+        let mut santa_possible_points = self.santa_possible_points.clone();
+
+        for point in self
+            .santa_possible_points
+            .iter()
+            .flat_map(|point| point.neighbors(self.max_x, self.max_y))
+        {
+            santa_possible_points.insert(point);
+        }
+
+        for blizzard in self.blizzards.iter_mut() {
+            blizzard.advance(self.max_x, self.max_y);
+            santa_possible_points.remove(&blizzard.pos);
+        }
+
+        self.santa_possible_points = santa_possible_points;
+        self.minute += 1;
+    }
+
+    fn santa_has_reached_goal(&self) -> bool {
+        self.santa_possible_points.contains(&self.goal)
+    }
+}
+
+#[derive(Debug, Clone)]
 struct Blizzard {
     pos: Pos,
     direction: Direction,
@@ -62,6 +94,18 @@ impl Pos {
 
         next
     }
+
+    fn neighbors(&self, max_x: i64, max_y: i64) -> impl IntoIterator<Item = Self> + '_ {
+        [
+            Direction::Down,
+            Direction::Right,
+            Direction::Up,
+            Direction::Left,
+        ]
+        .into_iter()
+        .map(|direction| self.advance(direction))
+        .filter(move |pos| pos.0 < max_x && pos.1 < max_y && pos.0 > 0 && pos.1 > 0)
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
@@ -101,7 +145,7 @@ impl FromStr for World {
         }
 
         let start = Pos(0, 1);
-        let goal = Pos(max_x, max_y - 1);
+        let goal = Pos(max_x - 1, max_y - 1);
         santa_possible_points.insert(start);
 
         Ok(Self {
