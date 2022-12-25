@@ -502,6 +502,22 @@ mod tests {
     }
 
     #[test]
+    fn test_corner_135() {
+        let start_pos = Pos(49, 50);
+        let direction = Delta::left();
+
+        test_corner(start_pos, direction, 1);
+    }
+
+    #[test]
+    fn test_corner_126() {
+        let start_pos = Pos(0, 100);
+        let direction = Delta::up();
+
+        test_corner(start_pos, direction, 1);
+    }
+
+    #[test]
     fn test_corner_234() {
         let start_pos = Pos(46, 146);
         let direction = Delta::down();
@@ -512,6 +528,14 @@ mod tests {
     #[test]
     fn test_corner_624() {
         let start_pos = Pos(199, 49);
+        let direction = Delta::down();
+
+        test_corner(start_pos, direction, 1);
+    }
+
+    #[test]
+    fn test_corner_564() {
+        let start_pos = Pos(149, 49);
         let direction = Delta::down();
 
         test_corner(start_pos, direction, 1);
