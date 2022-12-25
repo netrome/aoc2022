@@ -5,11 +5,34 @@ pub fn p1(input: &str) -> String {
         world.next_minute();
     }
 
-    (world.minute + 1).to_string()
+    world.next_minute();
+
+    world.minute.to_string()
 }
 
 pub fn p2(input: &str) -> String {
-    todo!();
+    let mut world: World = input.parse().unwrap();
+
+    while !world.santa_has_reached_goal() {
+        world.next_minute();
+    }
+    world.next_minute();
+
+    world.go_back();
+
+    while !world.santa_has_reached_goal() {
+        world.next_minute();
+    }
+    world.next_minute();
+
+    world.go_again();
+
+    while !world.santa_has_reached_goal() {
+        world.next_minute();
+    }
+    world.next_minute();
+
+    world.minute.to_string()
 }
 
 #[derive(Debug, Clone)]
@@ -45,6 +68,22 @@ impl World {
 
     fn santa_has_reached_goal(&self) -> bool {
         self.santa_possible_points.contains(&self.goal)
+    }
+
+    fn go_back(&mut self) {
+        let start = Pos(self.max_x, self.max_y - 1);
+        let goal = Pos(1, 1);
+        self.santa_possible_points.clear();
+        self.santa_possible_points.insert(start);
+        self.goal = goal;
+    }
+
+    fn go_again(&mut self) {
+        let start = Pos(0, 1);
+        let goal = Pos(self.max_x - 1, self.max_y - 1);
+        self.santa_possible_points.clear();
+        self.santa_possible_points.insert(start);
+        self.goal = goal;
     }
 
     #[allow(unused)]
