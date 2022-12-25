@@ -13,7 +13,7 @@ pub fn p2(input: &str) -> String {
     let (board, moves) = parse_input(input);
     let mut santa = Santa::new(board.start_pos());
 
-    for (idx, movement) in moves.0.into_iter().enumerate() {
+    for movement in moves.0.into_iter() {
         santa.advance(&board, &movement, true);
     }
 
@@ -187,7 +187,7 @@ impl Santa {
         (Pos(next_pos.1 + 50, 50), Delta::right())
     }
 
-    fn warp_2d(&self, next_pos: Pos, board: &Board) -> (Pos, Obj, Delta) {
+    fn warp_2d(&self, _next_pos: Pos, board: &Board) -> (Pos, Obj, Delta) {
         let warped_pos = match self.direction {
             Delta(-1, 0) => Pos(board.vranges[&self.pos.1].1, self.pos.1),
             Delta(1, 0) => Pos(board.vranges[&self.pos.1].0, self.pos.1),
@@ -379,7 +379,6 @@ impl FromStr for Moves {
         if !number.is_empty() {
             let numstr: String = number.into_iter().collect();
             moves.push(Movement::Forward(numstr.parse().expect("Numstr???")));
-            number = Vec::new();
         }
 
         Ok(Self(moves))
