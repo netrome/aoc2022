@@ -1,20 +1,31 @@
 pub fn p1(input: &str) -> String {
     let mut world: World = input.parse().unwrap();
-    //println!("{}", world.visualize());
 
     for i in 0..10 {
         world = world.simulate_round(i);
-        //println!("{}", world.visualize());
     }
 
     world.empty_ground_tiles_in_smallest_rect().to_string()
 }
 
 pub fn p2(input: &str) -> String {
-    todo!();
+    let mut world: World = input.parse().unwrap();
+
+    let mut idx = 0;
+    loop {
+        let next_world = world.simulate_round(idx);
+        idx += 1;
+
+        if next_world == world {
+            break;
+        }
+        world = next_world;
+    }
+
+    idx.to_string()
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 struct World {
     elf_positions: HashSet<Pos>,
 }
@@ -110,6 +121,7 @@ impl World {
         (top_left, bottom_right)
     }
 
+    #[allow(unused)]
     fn visualize(&self) -> String {
         let (top_left, bottom_right) = self.smallest_rectangle();
 
