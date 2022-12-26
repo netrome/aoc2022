@@ -3,7 +3,7 @@ pub fn p1(input: &str) -> String {
 }
 
 pub fn p2(input: &str) -> String {
-    todo!();
+    panic!("I'm done!")
 }
 
 fn parse_input(input: &str) -> Vec<Snafu> {
