@@ -1,14 +1,5 @@
 pub fn p1(input: &str) -> String {
-    for snafu in parse_input(input) {
-        let digit: i64 = (&snafu).into();
-        println!("Snafu: {}", snafu);
-        println!("Digit: {}", digit);
-        let snafu2: Snafu = digit.into();
-        println!("Snafu again: {}", snafu2);
-        println!("-----")
-    }
-
-    todo!();
+    Snafu::from(parse_input(input).iter().map(i64::from).sum::<i64>()).to_string()
 }
 
 pub fn p2(input: &str) -> String {
